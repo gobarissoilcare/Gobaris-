@@ -25,13 +25,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+function getRazorpay() {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    return null;
+  }
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+}
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, paymentsConfigured: Boolean(getRazorpay()) });
 });
 
 // Body: { items: [{ id, qty }], customerName, customerPhone, customerAddress }
@@ -44,6 +49,11 @@ app.post('/api/create-order', async (req, res) => {
     }
     if (!customerName || !customerPhone || !customerAddress) {
       return res.status(400).json({ error: 'Name, phone, and address are required.' });
+    }
+
+    const razorpay = getRazorpay();
+    if (!razorpay) {
+      return res.status(503).json({ error: 'Payments are not configured yet.' });
     }
 
     let amountPaise = 0;
@@ -94,6 +104,9 @@ app.post('/api/verify-payment', async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res.status(400).json({ error: 'Missing payment fields.' });
+    }
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(503).json({ error: 'Payments are not configured yet.' });
     }
 
     const expectedSignature = crypto
