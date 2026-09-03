@@ -801,6 +801,12 @@ footer p{color:var(--sand); line-height:1.7; margin-top:14px; max-width:46ch;}
 .cart-item .ci-remove{ background:none; border:none; color:var(--brown-mid); cursor:pointer; font-size:0.95rem; padding:0 2px; }
 .cart-item .ci-remove:hover{ color:#B5443A; }
 .cart-footer{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.cart-checkout-fields{ display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+.cart-checkout-fields input, .cart-checkout-fields textarea{
+  background:transparent; border:none; border-bottom:1px solid var(--line);
+  color:var(--brown-deep); font-family:'Work Sans',sans-serif; font-size:0.88rem; padding:8px 2px; outline:none; resize:none;
+}
+.cart-checkout-fields input::placeholder, .cart-checkout-fields textarea::placeholder{ color:var(--brown-mid); opacity:0.7; }
 .cart-subtotal{ display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:0.95rem; color:var(--brown-deep); margin-bottom:14px; }
 .cart-checkout{ width:100%; text-align:center; }
 .cart-note{ font-size:0.72rem; color:var(--brown-mid); margin-top:10px; text-align:center; line-height:1.4; }
@@ -1056,8 +1062,13 @@ footer{ background:transparent; }
     </div>
     <div class="cart-footer">
       <div class="cart-subtotal"><span>Subtotal</span><span id="cartSubtotal">&#8377;0</span></div>
+      <div class="cart-checkout-fields">
+        <input type="text" id="ckName" placeholder="Full name" autocomplete="name">
+        <input type="tel" id="ckPhone" placeholder="Phone number" autocomplete="tel">
+        <textarea id="ckAddress" placeholder="Delivery address" rows="2"></textarea>
+      </div>
       <button class="btn btn-solid cart-checkout" id="cartCheckout" type="button">Checkout (Preview)</button>
-      <p class="cart-note">This is a front-end preview &mdash; no payment is processed and no order is placed.</p>
+      <p class="cart-note" id="cartNote">This is a front-end preview &mdash; no payment is processed and no order is placed.</p>
     </div>
   </div>
 </div>
@@ -1463,6 +1474,7 @@ footer{ background:transparent; }
   </button>
 </div>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 // ---- Intro: the name settles in three times, then becomes the logo and flies to the header ----
 const intro = document.getElementById('intro');
@@ -1631,7 +1643,11 @@ packs.forEach(kg=>{
   row.appendChild(div);
 });
 
-// ---- Shop (preview): product grid + cart, front-end only, no real backend ----
+// ---- Shop: product grid + cart. Checkout goes live automatically once ----
+// ---- API_BASE below points at a deployed backend (see server/README.md). ----
+const API_BASE = 'https://YOUR-RENDER-SERVICE.onrender.com'; // TODO: replace after deploying server/
+const CHECKOUT_LIVE = !API_BASE.includes('YOUR-RENDER-SERVICE');
+
 const PRODUCTS = [
   { id:'p5',  kg:5,  price:649,  stock:18,
     description:"Perfect for balconies, kitchen gardens, and potted plants. Mix into topsoil or use as a monthly feed — a little goes a long way." },
@@ -1695,6 +1711,19 @@ function renderCart(){
 
 renderShopGrid();
 renderCart();
+
+// ---- Toggle preview vs. live checkout UI based on whether a backend is configured ----
+const checkoutFieldsEl = document.querySelector('.cart-checkout-fields');
+const cartNoteEl = document.getElementById('cartNote');
+const cartPreviewTagEl = document.querySelector('.cart-preview-tag');
+const cartCheckoutBtn = document.getElementById('cartCheckout');
+if(CHECKOUT_LIVE){
+  if(cartPreviewTagEl) cartPreviewTagEl.remove();
+  cartCheckoutBtn.textContent = 'Checkout';
+  cartNoteEl.textContent = 'Payments are processed securely via Razorpay.';
+}else{
+  if(checkoutFieldsEl) checkoutFieldsEl.style.display = 'none';
+}
 
 document.getElementById('shopGrid').addEventListener('click', (e)=>{
   const card = e.target.closest('.shop-card');
@@ -1789,8 +1818,76 @@ const cartBtn = document.getElementById('cartBtn');
 const cartDrawer = document.getElementById('cartDrawer');
 cartBtn.addEventListener('click', ()=> cartDrawer.classList.toggle('show'));
 document.getElementById('cartClose').addEventListener('click', ()=> cartDrawer.classList.remove('show'));
-document.getElementById('cartCheckout').addEventListener('click', ()=>{
-  alert('This is a preview cart — checkout, payment, and inventory are not connected yet. Let\'s wire up real checkout when you\'re ready.');
+document.getElementById('cartCheckout').addEventListener('click', async ()=>{
+  const entries = Object.keys(cart).map(id=>({ id, qty: cart[id] }));
+  if(entries.length === 0){ alert('Your cart is empty.'); return; }
+
+  if(!CHECKOUT_LIVE){
+    alert('This is a preview cart — checkout, payment, and inventory are not connected yet. Let\'s wire up real checkout when you\'re ready.');
+    return;
+  }
+
+  const name = document.getElementById('ckName').value.trim();
+  const phone = document.getElementById('ckPhone').value.trim();
+  const address = document.getElementById('ckAddress').value.trim();
+  if(!name || !phone || !address){
+    alert('Please fill in your name, phone, and delivery address.');
+    return;
+  }
+
+  cartCheckoutBtn.disabled = true;
+  cartCheckoutBtn.textContent = 'Processing…';
+
+  try{
+    const res = await fetch(API_BASE + '/api/create-order', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ items: entries, customerName: name, customerPhone: phone, customerAddress: address }),
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || 'Could not create order.');
+
+    const rzp = new window.Razorpay({
+      key: data.keyId,
+      amount: data.amount,
+      currency: data.currency,
+      order_id: data.orderId,
+      name: 'Gobaris',
+      description: 'Vermicompost order',
+      prefill: { name, contact: phone },
+      theme: { color: '#3C4A2E' },
+      handler: async function(response){
+        try{
+          const verifyRes = await fetch(API_BASE + '/api/verify-payment', {
+            method:'POST',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify(response),
+          });
+          const verifyData = await verifyRes.json();
+          if(!verifyRes.ok) throw new Error(verifyData.error || 'Payment verification failed.');
+          Object.keys(cart).forEach(k => delete cart[k]);
+          renderShopGrid();
+          renderCart();
+          document.getElementById('cartItems').innerHTML =
+            '<p class="cart-empty">Order placed — we\'ll reach out on WhatsApp/phone to confirm delivery. Thank you!</p>';
+        }catch(err){
+          alert('Payment succeeded but we couldn\'t confirm it automatically. Please contact us with this payment ID: ' + response.razorpay_payment_id);
+        }
+      },
+      modal:{
+        ondismiss: function(){
+          cartCheckoutBtn.disabled = false;
+          cartCheckoutBtn.textContent = 'Checkout';
+        },
+      },
+    });
+    rzp.open();
+  }catch(err){
+    alert(err.message || 'Something went wrong. Please try again.');
+  }finally{
+    cartCheckoutBtn.disabled = false;
+    cartCheckoutBtn.textContent = 'Checkout';
+  }
 });
 
 // ---- Scroll reveal ----

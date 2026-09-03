@@ -29,3 +29,11 @@ can serve it with zero configuration:
 **Custom domain:** add a `CNAME` file at the repo root containing just your
 domain (e.g. `gobaris.com`), then point your domain's DNS at the host
 per its instructions.
+
+## Checkout / payments backend
+
+The shop's checkout talks to a small backend in [`server/`](server/) that
+creates Razorpay orders, verifies payments, and stores each order in
+Postgres. It's not deployed yet — see [`server/README.md`](server/README.md)
+for setup. Until it's deployed, the shop runs in preview mode (front-end
+only, no real payment).

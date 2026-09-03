@@ -1,0 +1,20 @@
+{
+  "name": "gobaris-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend for the Gobaris shop: creates Razorpay orders, verifies payments, and stores orders in Postgres.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "razorpay": "^2.9.4"
+  }
+}
