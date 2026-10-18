@@ -2,7 +2,9 @@
 // request can never change what a customer is actually charged.
 // Keep this in sync with the PRODUCTS array in ../index.html.
 const PRODUCTS = {
+  p1: { kg: 1, price: 179, stock: 40 },
   p5: { kg: 5, price: 649, stock: 18 },
+  p10: { kg: 10, price: 1199, stock: 12 },
   p50: { kg: 50, price: 4999, stock: 3 },
 };
 
