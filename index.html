@@ -2033,7 +2033,13 @@ function routeFromHash(initial){
   return showPage('home');
 }
 window.addEventListener('hashchange', ()=> routeFromHash(false));
+// Every fresh open or refresh starts on the home page, at the top:
+// drop any #about / #shop / #blog left in the address and don't restore the old scroll position.
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+if(location.hash) history.replaceState(null, '', location.pathname + location.search);
+window.scrollTo(0, 0);
 var initialPage = routeFromHash(true) || 'home';
+window.addEventListener('pageshow', e => { if(e.persisted){ if(location.hash) history.replaceState(null, '', location.pathname + location.search); routeFromHash(true); window.scrollTo(0, 0); } });
 
 
 
