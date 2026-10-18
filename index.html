@@ -844,6 +844,13 @@ a.ig-card:hover{ transform:translateY(-4px); }
 .cc-list b{ display:block; font-family:'Space Mono',monospace; font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:#F0A94E; }
 .cc-list span{ display:block; margin-top:6px; font-size:0.9rem; line-height:1.5; color:rgba(244,238,223,0.78); }
 .cow-care-copy .cc-note{ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:1.3rem; line-height:1.4; color:#E8C989; }
+/* ================= SOIL CHECK BUTTON (hero) ================= */
+.soil-check-btn{ display:inline-flex; align-items:center; gap:14px; margin-top:22px; padding:12px 18px 12px 12px; border-radius:14px; text-decoration:none; background:rgba(240,169,78,0.14); border:1px solid rgba(240,169,78,0.55); color:#F4EEDF; transition:transform 0.2s ease, background 0.2s ease; }
+.soil-check-btn:hover{ transform:translateY(-2px); background:rgba(240,169,78,0.24); }
+.sc-ic{ width:42px; height:42px; flex:none; display:flex; align-items:center; justify-content:center; border-radius:10px; background:#F0A94E; font-size:1.3rem; }
+.soil-check-btn b{ display:block; font-family:'Fraunces','Playfair Display',serif; font-size:1.08rem; color:#F8F3E6; }
+.soil-check-btn small{ display:block; margin-top:2px; font-family:'Space Mono',monospace; font-size:0.68rem; letter-spacing:0.05em; color:#E8C989; }
+.sc-arrow{ font-size:1.3rem; color:#F0A94E; }
 /* ================= SECTION HEADINGS: the label is the big heading, the line under it a smaller subheading ================= */
 .eyebrow:has(+ h2){
   font-family:'Fraunces', 'Playfair Display', serif; font-weight:700;
@@ -983,6 +990,11 @@ footer{ padding:clamp(60px, 8vw, 90px) 0 32px; }
         <a href="#product" class="btn btn-solid">See pack sizes</a>
         <a href="#story" class="btn btn-ghost">Our story</a>
       </div>
+      <a href="soil-check.html" class="soil-check-btn">
+        <span class="sc-ic" aria-hidden="true">🌱</span>
+        <span><b>Check your soil &amp; plant health</b><small>Free 2-minute check with Google Lens</small></span>
+        <span class="sc-arrow" aria-hidden="true">&rarr;</span>
+      </a>
     </div>
     <div class="hero-about">
       <div class="hero-about-head">What is Gobaris?</div>
@@ -2036,8 +2048,14 @@ window.addEventListener('hashchange', ()=> routeFromHash(false));
 // Every fresh open or refresh starts on the home page, at the top:
 // drop any #about / #shop / #blog left in the address and don't restore the old scroll position.
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
-if(location.hash) history.replaceState(null, '', location.pathname + location.search);
-window.scrollTo(0, 0);
+(function(){
+  // keep the section only when a visitor clicked a link from another Gobaris page (e.g. "Shop" on the soil check)
+  const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+  let fromOurSite = false;
+  try { fromOurSite = !!document.referrer && new URL(document.referrer).origin === location.origin && new URL(document.referrer).pathname !== location.pathname; } catch(e){}
+  if(location.hash && !(nav.type === 'navigate' && fromOurSite)) history.replaceState(null, '', location.pathname + location.search);
+  if(!location.hash) window.scrollTo(0, 0);
+})();
 var initialPage = routeFromHash(true) || 'home';
 window.addEventListener('pageshow', e => { if(e.persisted){ if(location.hash) history.replaceState(null, '', location.pathname + location.search); routeFromHash(true); window.scrollTo(0, 0); } });
 
