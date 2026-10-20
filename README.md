@@ -37,3 +37,10 @@ creates Razorpay orders, verifies payments, and stores each order in
 Postgres. It's not deployed yet — see [`server/README.md`](server/README.md)
 for setup. Until it's deployed, the shop runs in preview mode (front-end
 only, no real payment).
+
+## Admin panel
+
+`/admin` is a sign-in-with-Google admin panel where the Gobaris team writes
+blog posts. Only three Google accounts can use it, and that is checked on the
+server. It needs the same backend plus a Google Client ID. See
+[`server/README.md` → Admin panel](server/README.md#admin-panel).

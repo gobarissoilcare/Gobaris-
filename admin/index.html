@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="only light">
+<meta name="darkreader-lock">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Gobaris Admin</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%233C4A2E'/%3E%3Ctext x='50' y='68' font-size='58' font-family='Georgia,serif' fill='%23C97A2B' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async></script>
+<style>
+:root{ color-scheme: only light; }
+:root{
+  --cream:#F4EEDF;
+  --paper:#FBF8F0;
+  --ink:#1B2445;
+  --brown-mid:#6B4226;
+  --green-deep:#3C4A2E;
+  --green-mid:#576B3F;
+  --saffron:#C97A2B;
+  --sand:#DCC9A3;
+  --line: rgba(43,27,16,0.14);
+  --danger:#A3361F;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;}
+body{
+  min-height:100vh;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:'Work Sans', sans-serif;
+  font-size:15px;
+}
+h1,h2,h3{font-family:'Playfair Display', serif; font-weight:700; margin:0;}
+.mono{font-family:'Space Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; font-size:0.7rem;}
+button, input, textarea, select{font:inherit; color:inherit;}
+[hidden]{display:none !important;}
+
+/* ---- top bar ---- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 24px; background:var(--green-deep); color:var(--cream);
+}
+.brand{display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit;}
+.brand .g{
+  width:34px; height:34px; border-radius:7px; background:var(--cream); color:var(--saffron);
+  display:grid; place-items:center; font-family:Georgia, serif; font-size:1.3rem;
+}
+.brand b{font-family:'Playfair Display', serif; font-size:1.15rem;}
+.brand small{display:block; color:var(--sand); font-family:'Space Mono', monospace; font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase;}
+.who{display:flex; align-items:center; gap:10px; min-width:0;}
+.who img{width:32px; height:32px; border-radius:50%; background:var(--sand);}
+.who .name{font-weight:600; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.who .email{font-size:0.75rem; color:var(--sand); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.who .txt{min-width:0;}
+@media(max-width:640px){ .who .txt{display:none;} .topbar{padding:10px 16px;} }
+
+/* ---- buttons ---- */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  padding:10px 18px; border-radius:6px; border:1px solid transparent; cursor:pointer;
+  font-weight:600; font-size:0.9rem; text-decoration:none; white-space:nowrap;
+}
+.btn:disabled{opacity:0.55; cursor:default;}
+.btn-solid{background:var(--green-deep); color:var(--cream);}
+.btn-solid:hover:not(:disabled){background:var(--green-mid);}
+.btn-saffron{background:var(--saffron); color:#fff;}
+.btn-saffron:hover:not(:disabled){filter:brightness(1.06);}
+.btn-ghost{background:transparent; border-color:var(--line); color:var(--ink);}
+.btn-ghost:hover:not(:disabled){background:rgba(60,74,46,0.07);}
+.btn-light{background:transparent; border-color:rgba(244,238,223,0.35); color:var(--cream); padding:7px 14px;}
+.btn-light:hover{background:rgba(244,238,223,0.1);}
+.btn-danger{background:transparent; border-color:rgba(163,54,31,0.35); color:var(--danger);}
+.btn-danger:hover:not(:disabled){background:rgba(163,54,31,0.07);}
+.btn-sm{padding:6px 12px; font-size:0.82rem;}
+
+/* ---- sign-in ---- */
+.signin{min-height:calc(100vh - 58px); display:grid; place-items:center; padding:32px 16px;}
+.signin-card{
+  width:100%; max-width:440px; background:var(--paper); border:1px solid var(--line); border-radius:12px;
+  padding:36px 32px; text-align:center; box-shadow:0 20px 50px rgba(27,36,69,0.08);
+}
+.signin-card h1{font-size:1.9rem; margin-top:10px;}
+.signin-card p{color:var(--brown-mid); line-height:1.6; margin:12px 0 0;}
+.signin-card .eyebrow{color:var(--saffron);}
+#googleBtn{display:flex; justify-content:center; margin-top:26px; min-height:44px;}
+.access{margin-top:28px; padding-top:20px; border-top:1px solid var(--line); text-align:left;}
+.access ul{list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px;}
+.access li{display:flex; align-items:center; gap:10px; font-size:0.92rem;}
+.access li::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--green-mid); flex:none;}
+.access .mono{color:var(--brown-mid);}
+
+.notice{
+  margin-top:18px; padding:12px 14px; border-radius:8px; font-size:0.9rem; line-height:1.5; text-align:left;
+  background:rgba(163,54,31,0.08); color:var(--danger); border:1px solid rgba(163,54,31,0.2);
+}
+.notice.ok{background:rgba(87,107,63,0.1); color:var(--green-deep); border-color:rgba(87,107,63,0.25);}
+
+/* ---- dashboard layout ---- */
+.layout{display:grid; grid-template-columns:230px minmax(0,1fr); min-height:calc(100vh - 58px);}
+.side{border-right:1px solid var(--line); padding:24px 14px; background:rgba(251,248,240,0.6);}
+.side .mono{color:var(--brown-mid); padding:0 12px; display:block; margin:0 0 8px;}
+.side .mono + .mono, .side nav + .mono{margin-top:26px;}
+.side nav{display:grid; gap:2px;}
+.side a, .side span.soon{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  padding:9px 12px; border-radius:6px; text-decoration:none; color:var(--ink); font-weight:500;
+}
+.side a.active{background:var(--green-deep); color:var(--cream);}
+.side a:not(.active):hover{background:rgba(60,74,46,0.07);}
+.side span.soon{color:rgba(27,36,69,0.45); cursor:default;}
+.side span.soon small{font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; text-transform:uppercase; border:1px solid var(--line); border-radius:4px; padding:2px 5px;}
+.side .back-site{margin-top:26px; color:var(--brown-mid); font-size:0.9rem;}
+main{padding:32px clamp(16px, 4vw, 48px) 80px; min-width:0;}
+@media(max-width:800px){
+  .layout{grid-template-columns:1fr;}
+  .side{border-right:none; border-bottom:1px solid var(--line); padding:10px 16px; overflow-x:auto;}
+  .side .mono, .side .soon, .side .back-site{display:none !important;}
+  .side nav{display:flex;}
+}
+
+.head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+.head h2{font-size:clamp(1.6rem, 3vw, 2.1rem);}
+.head p{margin:6px 0 0; color:var(--brown-mid);}
+
+/* ---- post list ---- */
+.list{margin-top:26px; display:grid; gap:12px;}
+.row{
+  display:grid; grid-template-columns:72px minmax(0,1fr) auto; gap:16px; align-items:center;
+  background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:14px;
+}
+.row .thumb{width:72px; height:54px; border-radius:6px; background:var(--sand) center/cover no-repeat; display:grid; place-items:center; color:var(--brown-mid); font-family:Georgia,serif; font-size:1.3rem;}
+.row h3{font-size:1.08rem; line-height:1.3; overflow-wrap:anywhere;}
+.row .sub{margin-top:5px; font-size:0.82rem; color:var(--brown-mid); display:flex; flex-wrap:wrap; gap:4px 12px; align-items:center;}
+.row .acts{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+.badge{font-family:'Space Mono',monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; padding:3px 7px; border-radius:4px;}
+.badge.published{background:rgba(87,107,63,0.15); color:var(--green-deep);}
+.badge.draft{background:rgba(201,122,43,0.15); color:#8A4E14;}
+@media(max-width:640px){
+  .row{grid-template-columns:56px minmax(0,1fr);}
+  .row .thumb{width:56px; height:44px;}
+  .row .acts{grid-column:1 / -1; justify-content:flex-start;}
+}
+.empty{
+  margin-top:26px; padding:48px 24px; text-align:center; border:1px dashed var(--sand); border-radius:12px; color:var(--brown-mid);
+}
+.empty h3{color:var(--ink); font-size:1.3rem; margin-bottom:8px;}
+
+/* ---- editor ---- */
+.editor{margin-top:24px; display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:24px; align-items:start;}
+@media(max-width:1000px){ .editor{grid-template-columns:1fr;} }
+.card{background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px;}
+.field{display:grid; gap:6px; margin-top:16px;}
+.field:first-child{margin-top:0;}
+.field label{font-weight:600; font-size:0.88rem;}
+.field .hint{font-size:0.78rem; color:var(--brown-mid); font-weight:400;}
+input[type=text], input[type=number], textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:6px; background:#fff;
+}
+input:focus, textarea:focus{outline:2px solid rgba(87,107,63,0.45); outline-offset:0; border-color:var(--green-mid);}
+#fTitle{font-family:'Playfair Display', serif; font-size:1.35rem; font-weight:700;}
+textarea{resize:vertical; line-height:1.6;}
+#fBody{min-height:360px; font-size:0.95rem;}
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:12px;}
+.tabs button{background:none; border:none; padding:8px 12px; cursor:pointer; font-weight:600; color:var(--brown-mid); border-bottom:2px solid transparent; margin-bottom:-1px;}
+.tabs button.on{color:var(--ink); border-bottom-color:var(--saffron);}
+.help{margin-top:10px; font-size:0.8rem; color:var(--brown-mid); line-height:1.7;}
+.help code{font-family:'Space Mono',monospace; font-size:0.75rem; background:rgba(220,201,163,0.4); padding:1px 5px; border-radius:3px;}
+
+.cover-box{
+  position:relative; border:1px dashed var(--sand); border-radius:8px; aspect-ratio:16/9; overflow:hidden;
+  display:grid; place-items:center; text-align:center; color:var(--brown-mid); font-size:0.85rem; background:#fff;
+  cursor:pointer;
+}
+.cover-box img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+.cover-acts{display:flex; gap:8px; margin-top:8px;}
+.side-actions{display:grid; gap:10px;}
+.side-actions .status{font-size:0.85rem; color:var(--brown-mid); line-height:1.5;}
+
+/* preview uses the same look as the blog on gobaris.com */
+.preview{background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:28px clamp(16px,4vw,36px); min-height:360px;}
+.preview .tag{font-family:'Space Mono',monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--saffron);}
+.preview h2{font-size:clamp(1.6rem,3vw,2.2rem); margin-top:12px; line-height:1.15;}
+.preview .meta{margin-top:12px; font-family:'Space Mono',monospace; font-size:0.72rem; letter-spacing:0.04em; color:var(--brown-mid);}
+.preview .cover{width:100%; margin-top:22px; border-radius:8px; display:block;}
+.preview .body{margin-top:26px;}
+.preview .body p, .preview .body li{line-height:1.85; color:var(--brown-mid); font-size:1.02rem;}
+.preview .body p{margin:20px 0 0;}
+.preview .body > :first-child{margin-top:0;}
+.preview .body h3{font-size:1.3rem; margin-top:36px; color:var(--ink);}
+.preview .body ul, .preview .body ol{margin:16px 0 0; padding-left:1.4em;}
+.preview .body blockquote{margin:24px 0 0; padding:4px 0 4px 18px; border-left:3px solid var(--saffron);}
+.preview .body blockquote p{font-style:italic;}
+.preview .body a{color:var(--green-deep);}
+
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); opacity:0;
+  background:var(--ink); color:var(--cream); padding:12px 20px; border-radius:8px; font-size:0.9rem;
+  transition:opacity .25s, transform .25s; pointer-events:none; z-index:100; max-width:calc(100vw - 32px);
+}
+.toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+.loading{margin-top:26px; color:var(--brown-mid);}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="./">
+    <span class="g" aria-hidden="true">G</span>
+    <span><b>Gobaris</b><small>Admin panel</small></span>
+  </a>
+  <div class="who" id="who" hidden>
+    <img id="whoPic" alt="">
+    <div class="txt"><div class="name" id="whoName"></div><div class="email" id="whoEmail"></div></div>
+    <button class="btn btn-light" id="signOut">Sign out</button>
+  </div>
+</header>
+
+<!-- ============ SIGN IN ============ -->
+<section class="signin" id="signinView" hidden>
+  <div class="signin-card">
+    <div class="mono eyebrow">Admins only</div>
+    <h1>Sign in to Gobaris</h1>
+    <p>Use your Google account. Only the people listed below can get in.</p>
+    <div id="googleBtn"></div>
+    <div class="notice" id="signinError" hidden></div>
+    <div class="access">
+      <div class="mono">Who has access</div>
+      <ul id="adminList"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="layout" id="appView" hidden>
+  <aside class="side">
+    <span class="mono">Manage</span>
+    <nav>
+      <a href="#posts" class="active">Blog posts</a>
+    </nav>
+    <span class="mono">Coming later</span>
+    <span class="soon">Shop &amp; prices <small>Soon</small></span>
+    <span class="soon">Orders <small>Soon</small></span>
+    <span class="soon">Website text <small>Soon</small></span>
+    <a class="back-site" href="../" target="_blank" rel="noopener">View website ↗</a>
+  </aside>
+
+  <main>
+    <!-- post list -->
+    <section id="listView">
+      <div class="head">
+        <div>
+          <h2>Blog posts</h2>
+          <p>Posts you publish here appear on the Blog page of gobaris.com.</p>
+        </div>
+        <a class="btn btn-saffron" href="#new">+ New post</a>
+      </div>
+      <div class="loading" id="listLoading">Loading posts…</div>
+      <div class="notice" id="listError" hidden></div>
+      <div class="list" id="postList"></div>
+      <div class="empty" id="listEmpty" hidden>
+        <h3>No posts yet</h3>
+        <p>Write the first one, and it will show up on the website's Blog page as soon as you publish it.</p>
+        <p style="margin-top:18px;"><a class="btn btn-solid" href="#new">Write a post</a></p>
+      </div>
+    </section>
+
+    <!-- editor -->
+    <section id="editView" hidden>
+      <div class="head">
+        <div>
+          <a href="#posts" class="mono" style="color:var(--green-deep); text-decoration:none;">← All posts</a>
+          <h2 id="editHeading" style="margin-top:8px;">New post</h2>
+        </div>
+      </div>
+      <div class="notice" id="editError" hidden></div>
+
+      <div class="editor">
+        <div class="card">
+          <div class="field">
+            <label for="fTitle">Title</label>
+            <input type="text" id="fTitle" maxlength="200" placeholder="e.g. How to start a small vermicompost bed">
+          </div>
+          <div class="field">
+            <label for="fExcerpt">Short summary <span class="hint">— shown on the blog's list of posts</span></label>
+            <textarea id="fExcerpt" rows="2" maxlength="400" placeholder="One or two sentences on what the reader will learn."></textarea>
+          </div>
+          <div class="field">
+            <div class="tabs" role="tablist">
+              <button type="button" class="on" data-tab="write">Write</button>
+              <button type="button" data-tab="preview">Preview</button>
+            </div>
+            <div id="writePane">
+              <textarea id="fBody" placeholder="Write your post here.&#10;&#10;Leave an empty line between paragraphs."></textarea>
+              <div class="help">
+                Formatting: an empty line starts a new paragraph ·
+                <code>## Heading</code> ·
+                <code>**bold**</code> ·
+                <code>*italic*</code> ·
+                <code>- list item</code> ·
+                <code>1. numbered item</code> ·
+                <code>&gt; quote</code> ·
+                <code>[link text](https://…)</code>
+              </div>
+            </div>
+            <div id="previewPane" hidden>
+              <article class="preview" id="preview"></article>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:16px;">
+          <div class="card side-actions">
+            <div class="status" id="editStatus">Not saved yet.</div>
+            <button class="btn btn-saffron" id="publishBtn">Publish</button>
+            <button class="btn btn-ghost" id="draftBtn">Save as draft</button>
+            <button class="btn btn-danger" id="deleteBtn" hidden>Delete post</button>
+          </div>
+          <div class="card">
+            <div class="field">
+              <label for="fTag">Category</label>
+              <input type="text" id="fTag" maxlength="60" list="tagOptions" placeholder="e.g. Guides">
+              <datalist id="tagOptions">
+                <option value="Composting 101"></option>
+                <option value="Guides"></option>
+                <option value="Soil Health"></option>
+                <option value="Culture &amp; Roots"></option>
+                <option value="News"></option>
+              </datalist>
+            </div>
+            <div class="field">
+              <label for="fMinutes">Reading time (minutes) <span class="hint">— leave empty to work it out</span></label>
+              <input type="number" id="fMinutes" min="1" max="599" placeholder="auto">
+            </div>
+            <div class="field">
+              <label>Cover image <span class="hint">— optional</span></label>
+              <div class="cover-box" id="coverBox" tabindex="0" role="button" aria-label="Choose a cover image">
+                <span id="coverEmpty">Click to choose a photo<br><small>JPG, PNG or WebP</small></span>
+                <img id="coverImg" alt="" hidden>
+              </div>
+              <input type="file" id="coverFile" accept="image/jpeg,image/png,image/webp" hidden>
+              <div class="cover-acts">
+                <button type="button" class="btn btn-ghost btn-sm" id="coverChange" hidden>Change</button>
+                <button type="button" class="btn btn-danger btn-sm" id="coverRemove" hidden>Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Same backend as the shop (see server/README.md). On your own computer the
+// admin page talks to a server running locally instead.
+const API_BASE = ['localhost', '127.0.0.1'].includes(location.hostname)
+  ? 'http://localhost:4000'
+  : 'https://gobaris-server.onrender.com';
+const TOKEN_KEY = 'gobaris-admin-token';
+
+const $ = id => document.getElementById(id);
+const store = {
+  get(){ try { return localStorage.getItem(TOKEN_KEY); } catch(e){ return null; } },
+  set(v){ try { localStorage.setItem(TOKEN_KEY, v); } catch(e){} },
+  clear(){ try { localStorage.removeItem(TOKEN_KEY); } catch(e){} },
+};
+let token = store.get();
+let me = null;
+let posts = [];
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+function showNotice(el, msg){ el.textContent = msg || ''; el.hidden = !msg; }
+function fmtDate(d){
+  return d ? new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) : '';
+}
+
+async function api(path, opts){
+  opts = opts || {};
+  let res;
+  try {
+    res = await fetch(API_BASE + path, {
+      method: opts.method || 'GET',
+      headers: Object.assign(
+        {'Content-Type': 'application/json'},
+        token ? {'Authorization': 'Bearer ' + token} : {}
+      ),
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+  } catch(e){
+    throw new Error('Could not reach the Gobaris server. Check your internet connection and try again.');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && path !== '/api/admin/login') {
+    signOut('Your session has ended. Please sign in again.');
+  }
+  if (!res.ok) throw new Error(data.error || 'Something went wrong (' + res.status + ').');
+  return data;
+}
+
+// Shared formatter: turns what an admin types into the post's HTML.
+// Keep in sync with formatPost() in ../index.html.
+function formatPost(text){
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\s][^*]*?)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const out = [];
+  let para = [], list = null;
+  const flushPara = () => { if (para.length){ out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+  const flushList = () => { if (list){ out.push('<' + list.tag + '>' + list.items.map(i => '<li>' + inline(i) + '</li>').join('') + '</' + list.tag + '>'); list = null; } };
+  const flush = () => { flushPara(); flushList(); };
+  let quote = [];
+  const flushQuote = () => { if (quote.length){ out.push('<blockquote><p>' + inline(quote.join(' ')) + '</p></blockquote>'); quote = []; } };
+  String(text || '').replace(/\r/g, '').split('\n').forEach(raw => {
+    const line = raw.trim();
+    let m;
+    if (!line){ flush(); flushQuote(); return; }
+    if ((m = /^#{1,6}\s+(.*)$/.exec(line))){ flush(); flushQuote(); out.push('<h3>' + inline(m[1]) + '</h3>'); return; }
+    if ((m = /^>\s?(.*)$/.exec(line))){ flush(); quote.push(m[1]); return; }
+    flushQuote();
+    const ul = /^[-*•]\s+(.*)$/.exec(line), ol = /^\d+[.)]\s+(.*)$/.exec(line);
+    if (ul || ol){
+      flushPara();
+      const tag = ul ? 'ul' : 'ol';
+      if (!list || list.tag !== tag){ flushList(); list = {tag, items: []}; }
+      list.items.push((ul || ol)[1]);
+      return;
+    }
+    flushList();
+    para.push(line);
+  });
+  flush(); flushQuote();
+  return out.join('\n');
+}
+
+// ================= SIGN IN =================
+let gsiReady = null;
+function loadGoogle(){
+  if (gsiReady) return gsiReady;
+  gsiReady = new Promise((resolve, reject) => {
+    let tries = 0;
+    (function wait(){
+      if (window.google && google.accounts && google.accounts.id) return resolve();
+      if (++tries > 100) return reject(new Error('Google sign-in did not load. Please refresh the page.'));
+      setTimeout(wait, 100);
+    })();
+  });
+  return gsiReady;
+}
+
+async function showSignin(message){
+  $('appView').hidden = true;
+  $('who').hidden = true;
+  $('signinView').hidden = false;
+  showNotice($('signinError'), message);
+  let config;
+  try {
+    config = await api('/api/admin/config');
+  } catch(e){
+    showNotice($('signinError'), e.message);
+    return;
+  }
+  $('adminList').innerHTML = config.admins.map(n => '<li>' + esc(n) + '</li>').join('');
+  if (!config.googleClientId){
+    showNotice($('signinError'), 'Google sign-in is not switched on yet: the server needs its GOOGLE_CLIENT_ID setting (see server/README.md).');
+    return;
+  }
+  try {
+    await loadGoogle();
+  } catch(e){
+    showNotice($('signinError'), e.message);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: config.googleClientId,
+    callback: onGoogleCredential,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+  $('googleBtn').innerHTML = '';
+  google.accounts.id.renderButton($('googleBtn'), {
+    theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with', width: 280,
+  });
+}
+
+async function onGoogleCredential(response){
+  showNotice($('signinError'), '');
+  try {
+    const data = await api('/api/admin/login', {method: 'POST', body: {credential: response.credential}});
+    token = data.token;
+    store.set(token);
+    me = data.admin;
+    startApp();
+  } catch(e){
+    showNotice($('signinError'), e.message);
+  }
+}
+
+function signOut(message){
+  token = null;
+  me = null;
+  store.clear();
+  if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
+  dirty = false;
+  if (location.hash) history.replaceState(null, '', location.pathname);
+  showSignin(message);
+}
+$('signOut').addEventListener('click', () => {
+  if (dirty && !confirm('You have unsaved changes. Sign out anyway?')) return;
+  dirty = false;
+  signOut();
+});
+
+// ================= APP =================
+function startApp(){
+  $('signinView').hidden = true;
+  $('appView').hidden = false;
+  $('who').hidden = false;
+  $('whoName').textContent = me.name;
+  $('whoEmail').textContent = me.email;
+  if (me.picture){ $('whoPic').src = me.picture; $('whoPic').hidden = false; } else { $('whoPic').hidden = true; }
+  route();
+}
+
+function route(){
+  if (!me) return;
+  const hash = location.hash.replace('#', '');
+  const m = /^edit-(\d+)$/.exec(hash);
+  if (hash === 'new') openEditor(null);
+  else if (m) openEditor(Number(m[1]));
+  else showList();
+}
+window.addEventListener('hashchange', () => {
+  if (dirty && !confirm('You have unsaved changes. Leave this post without saving?')){
+    history.replaceState(null, '', lastHash);
+    return;
+  }
+  dirty = false;
+  route();
+});
+let lastHash = location.hash;
+window.addEventListener('beforeunload', e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } });
+
+// ---- list ----
+async function loadPosts(){
+  const data = await api('/api/admin/posts');
+  posts = data.posts;
+  return posts;
+}
+
+async function showList(){
+  lastHash = location.hash;
+  $('editView').hidden = true;
+  $('listView').hidden = false;
+  showNotice($('listError'), '');
+  $('listLoading').hidden = false;
+  try {
+    await loadPosts();
+  } catch(e){
+    $('listLoading').hidden = true;
+    showNotice($('listError'), e.message);
+    return;
+  }
+  $('listLoading').hidden = true;
+  renderList();
+}
+
+function renderList(){
+  $('listEmpty').hidden = posts.length > 0;
+  $('postList').innerHTML = posts.map(p => {
+    const thumb = p.coverUrl
+      ? '<div class="thumb" style="background-image:url(\'' + esc(API_BASE + p.coverUrl) + '\')"></div>'
+      : '<div class="thumb" aria-hidden="true">G</div>';
+    const when = p.status === 'published'
+      ? 'Published ' + fmtDate(p.publishedAt)
+      : 'Last saved ' + fmtDate(p.updatedAt);
+    return '<div class="row">' + thumb +
+      '<div><h3>' + esc(p.title) + '</h3>' +
+        '<div class="sub"><span class="badge ' + p.status + '">' + (p.status === 'published' ? 'Live' : 'Draft') + '</span>' +
+        (p.tag ? '<span>' + esc(p.tag) + '</span>' : '') +
+        '<span>' + when + '</span><span>by ' + esc(p.author) + '</span></div></div>' +
+      '<div class="acts">' +
+        (p.status === 'published' ? '<a class="btn btn-ghost btn-sm" href="../#blog-' + encodeURIComponent(p.slug) + '" target="_blank" rel="noopener">View</a>' : '') +
+        '<a class="btn btn-solid btn-sm" href="#edit-' + p.id + '">Edit</a>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ---- editor ----
+let editing = null;     // the post being edited, or null for a new one
+let cover;              // undefined = unchanged, null = removed, string = new data: URL
+let dirty = false;
+const fields = ['fTitle', 'fExcerpt', 'fBody', 'fTag', 'fMinutes'];
+fields.forEach(id => $(id).addEventListener('input', () => { dirty = true; if (!$('previewPane').hidden) renderPreview(); }));
+
+async function openEditor(id){
+  lastHash = location.hash;
+  $('listView').hidden = true;
+  $('editView').hidden = false;
+  showNotice($('editError'), '');
+  setTab('write');
+  editing = null;
+  cover = undefined;
+  if (id != null){
+    if (!posts.length){
+      try { await loadPosts(); } catch(e){ showNotice($('editError'), e.message); return; }
+    }
+    editing = posts.find(p => p.id === id) || null;
+    if (!editing){ showNotice($('editError'), 'That post could not be found. It may have been deleted.'); }
+  }
+  const p = editing || {};
+  $('editHeading').textContent = editing ? 'Edit post' : 'New post';
+  $('fTitle').value = p.title || '';
+  $('fExcerpt').value = p.excerpt || '';
+  $('fBody').value = p.body || '';
+  $('fTag').value = p.tag || '';
+  $('fMinutes').value = editing ? p.readMinutes : '';
+  setCoverPreview(p.coverUrl ? API_BASE + p.coverUrl : null);
+  $('deleteBtn').hidden = !editing;
+  updateStatus();
+  dirty = false;
+  if (!editing) $('fTitle').focus();
+}
+
+function updateStatus(){
+  const p = editing;
+  if (!p){
+    $('editStatus').textContent = 'Not saved yet.';
+    $('publishBtn').textContent = 'Publish';
+    $('draftBtn').textContent = 'Save as draft';
+    return;
+  }
+  const by = p.updatedBy && p.updatedBy !== p.authorEmail ? ' Last edited by ' + p.updatedBy + '.' : '';
+  if (p.status === 'published'){
+    $('editStatus').textContent = 'Live on the website since ' + fmtDate(p.publishedAt) + '. Written by ' + p.author + '.' + by;
+    $('publishBtn').textContent = 'Update post';
+    $('draftBtn').textContent = 'Unpublish (move to drafts)';
+  } else {
+    $('editStatus').textContent = 'Draft — not on the website yet. Written by ' + p.author + '.' + by;
+    $('publishBtn').textContent = 'Publish';
+    $('draftBtn').textContent = 'Save draft';
+  }
+}
+
+function setCoverPreview(src){
+  $('coverImg').hidden = !src;
+  $('coverEmpty').hidden = !!src;
+  $('coverChange').hidden = !src;
+  $('coverRemove').hidden = !src;
+  if (src) $('coverImg').src = src; else $('coverImg').removeAttribute('src');
+}
+const pickCover = () => $('coverFile').click();
+$('coverBox').addEventListener('click', pickCover);
+$('coverBox').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pickCover(); } });
+$('coverChange').addEventListener('click', pickCover);
+$('coverRemove').addEventListener('click', () => { cover = null; dirty = true; setCoverPreview(null); renderPreview(); });
+$('coverFile').addEventListener('change', async () => {
+  const file = $('coverFile').files[0];
+  $('coverFile').value = '';
+  if (!file) return;
+  try {
+    cover = await shrinkImage(file);
+    dirty = true;
+    setCoverPreview(cover);
+    renderPreview();
+  } catch(e){
+    showNotice($('editError'), e.message);
+  }
+});
+
+// Resize big phone photos before upload so pages stay fast.
+function shrinkImage(file){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const max = 1600;
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * scale);
+      c.height = Math.round(img.naturalHeight * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      let data = c.toDataURL('image/webp', 0.82);
+      if (!data.startsWith('data:image/webp')) data = c.toDataURL('image/jpeg', 0.85);
+      if (data.length > 2.6 * 1024 * 1024) return reject(new Error('That image is too large even after resizing. Please pick a smaller one.'));
+      resolve(data);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file could not be opened as an image.')); };
+    img.src = url;
+  });
+}
+
+function setTab(tab){
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('writePane').hidden = tab !== 'write';
+  $('previewPane').hidden = tab !== 'preview';
+  if (tab === 'preview') renderPreview();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+function autoMinutes(){
+  const words = $('fBody').value.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+function renderPreview(){
+  if ($('previewPane').hidden) return;
+  const mins = Number($('fMinutes').value) || autoMinutes();
+  const author = editing ? editing.author : me.name;
+  const coverSrc = $('coverImg').hidden ? '' : $('coverImg').src;
+  $('preview').innerHTML =
+    ($('fTag').value.trim() ? '<div class="tag">' + esc($('fTag').value.trim()) + '</div>' : '') +
+    '<h2>' + esc($('fTitle').value.trim() || 'Untitled post') + '</h2>' +
+    '<div class="meta">' + mins + ' MIN READ · BY ' + esc(author).toUpperCase() + '</div>' +
+    (coverSrc ? '<img class="cover" src="' + esc(coverSrc) + '" alt="">' : '') +
+    '<div class="body">' + (formatPost($('fBody').value) || '<p><em>Nothing written yet.</em></p>') + '</div>';
+}
+
+async function save(status){
+  showNotice($('editError'), '');
+  const body = {
+    title: $('fTitle').value,
+    excerpt: $('fExcerpt').value,
+    body: $('fBody').value,
+    tag: $('fTag').value,
+    readMinutes: $('fMinutes').value ? Number($('fMinutes').value) : null,
+    status,
+  };
+  if (cover !== undefined) body.cover = cover;
+  const buttons = [$('publishBtn'), $('draftBtn'), $('deleteBtn')];
+  buttons.forEach(b => b.disabled = true);
+  try {
+    const data = editing
+      ? await api('/api/admin/posts/' + editing.id, {method: 'PUT', body})
+      : await api('/api/admin/posts', {method: 'POST', body});
+    const wasNew = !editing;
+    editing = data.post;
+    const i = posts.findIndex(p => p.id === editing.id);
+    if (i === -1) posts.unshift(editing); else posts[i] = editing;
+    cover = undefined;
+    dirty = false;
+    updateStatus();
+    $('deleteBtn').hidden = false;
+    $('editHeading').textContent = 'Edit post';
+    if (wasNew){ lastHash = '#edit-' + editing.id; history.replaceState(null, '', lastHash); }
+    toast(status === 'published' ? 'Published — it’s live on the Blog page.' : 'Saved as a draft.');
+  } catch(e){
+    showNotice($('editError'), e.message);
+  } finally {
+    buttons.forEach(b => b.disabled = false);
+  }
+}
+$('publishBtn').addEventListener('click', () => save('published'));
+$('draftBtn').addEventListener('click', () => save('draft'));
+$('deleteBtn').addEventListener('click', async () => {
+  if (!editing) return;
+  if (!confirm('Delete "' + editing.title + '"? This cannot be undone.')) return;
+  try {
+    await api('/api/admin/posts/' + editing.id, {method: 'DELETE'});
+    posts = posts.filter(p => p.id !== editing.id);
+    dirty = false;
+    toast('Post deleted.');
+    location.hash = 'posts';
+  } catch(e){
+    showNotice($('editError'), e.message);
+  }
+});
+
+// ================= START =================
+(async function init(){
+  if (!token) return showSignin();
+  try {
+    const data = await api('/api/admin/me');
+    me = data.admin;
+    startApp();
+  } catch(e){
+    // a 401 has already signed out; anything else (e.g. no connection) is shown on the sign-in card
+    if (token) signOut(e.message);
+  }
+})();
+</script>
+</body>
+</html>

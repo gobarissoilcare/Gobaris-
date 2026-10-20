@@ -551,6 +551,14 @@ footer p{color:var(--sand); line-height:1.7; margin-top:14px; max-width:46ch;}
   letter-spacing:0.05em; text-transform:uppercase; color:var(--green-deep); text-decoration:none;
 }
 .post .back:hover{color:var(--saffron);}
+/* posts written in the admin panel (gobaris.com/admin) */
+.post-card .cover{margin:-28px -26px 22px; width:calc(100% + 52px); max-width:none; aspect-ratio:16/9; object-fit:cover; border-radius:8px 8px 0 0;}
+.post .cover{width:100%; margin-top:28px; border-radius:8px;}
+.post .body ul, .post .body ol{margin:18px 0 0; padding-left:1.4em;}
+.post .body li{line-height:1.85; color:var(--brown-mid); font-size:1.02rem;}
+.post .body blockquote{margin:26px 0 0; padding:4px 0 4px 18px; border-left:3px solid var(--saffron);}
+.post .body blockquote p{font-style:italic;}
+.post .body a{color:var(--green-deep);}
 
 
 /* ================= SHOP (preview) ================= */
@@ -2231,6 +2239,96 @@ var initialPage = routeFromHash(true) || 'home';
     const url = LINKEDIN[a.dataset.founder];
     if(url){ a.href = url; a.hidden = false; }
   });
+})();
+
+// ---- Blog: posts written in the admin panel (gobaris.com/admin) ----
+// They're fetched from the server and shown above the posts written into this file.
+// If the server can't be reached the Blog page simply shows the posts below as before.
+// formatPost() turns what an admin types into HTML; keep in sync with admin/index.html.
+function formatPost(text){
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\s][^*]*?)\*/g, '<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const out = [];
+  let para = [], list = null;
+  const flushPara = () => { if (para.length){ out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; } };
+  const flushList = () => { if (list){ out.push('<' + list.tag + '>' + list.items.map(i => '<li>' + inline(i) + '</li>').join('') + '</' + list.tag + '>'); list = null; } };
+  const flush = () => { flushPara(); flushList(); };
+  let quote = [];
+  const flushQuote = () => { if (quote.length){ out.push('<blockquote><p>' + inline(quote.join(' ')) + '</p></blockquote>'); quote = []; } };
+  String(text || '').replace(/\r/g, '').split('\n').forEach(raw => {
+    const line = raw.trim();
+    let m;
+    if (!line){ flush(); flushQuote(); return; }
+    if ((m = /^#{1,6}\s+(.*)$/.exec(line))){ flush(); flushQuote(); out.push('<h3>' + inline(m[1]) + '</h3>'); return; }
+    if ((m = /^>\s?(.*)$/.exec(line))){ flush(); quote.push(m[1]); return; }
+    flushQuote();
+    const ul = /^[-*•]\s+(.*)$/.exec(line), ol = /^\d+[.)]\s+(.*)$/.exec(line);
+    if (ul || ol){
+      flushPara();
+      const tag = ul ? 'ul' : 'ol';
+      if (!list || list.tag !== tag){ flushList(); list = {tag, items: []}; }
+      list.items.push((ul || ol)[1]);
+      return;
+    }
+    flushList();
+    para.push(line);
+  });
+  flush(); flushQuote();
+  return out.join('\n');
+}
+(function(){
+  const grid = document.querySelector('#page-blog .post-grid');
+  const articles = document.querySelector('#page-blog .articles');
+  if(!grid || !articles || !window.fetch) return;
+  const text = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; };
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() : '';
+  fetch(API_BASE + '/api/posts')
+    .then(r => r.ok ? r.json() : {posts: []})
+    .then(data => {
+      const posts = (data && data.posts) || [];
+      const cardsFrag = document.createDocumentFragment();
+      const postsFrag = document.createDocumentFragment();
+      posts.forEach(p => {
+        const id = 'blog-' + p.slug;
+        if(document.getElementById(id)) return;
+        const cover = p.coverUrl ? API_BASE + p.coverUrl : '';
+        const meta = [p.readMinutes + ' MIN READ', p.author ? 'BY ' + text(p.author).toUpperCase() : '', fmtDate(p.publishedAt)].filter(Boolean).join(' · ');
+
+        const card = document.createElement('a');
+        card.className = 'post-card reveal';
+        card.href = '#' + id;
+        card.innerHTML =
+          (cover ? '<img class="cover" src="' + text(cover) + '" alt="" loading="lazy" decoding="async">' : '') +
+          (p.tag ? '<div class="tag">' + text(p.tag) + '</div>' : '') +
+          '<h3>' + text(p.title) + '</h3>' +
+          (p.excerpt ? '<p class="excerpt">' + text(p.excerpt) + '</p>' : '') +
+          '<div class="meta">' + p.readMinutes + ' MIN READ</div>' +
+          '<div class="read">Read article →</div>';
+        cardsFrag.appendChild(card);
+
+        const art = document.createElement('article');
+        art.className = 'post reveal';
+        art.id = id;
+        art.innerHTML =
+          (p.tag ? '<div class="tag">' + text(p.tag) + '</div>' : '') +
+          '<h2>' + text(p.title) + '</h2>' +
+          '<div class="meta">' + meta + '</div>' +
+          (cover ? '<img class="cover" src="' + text(cover) + '" alt="" loading="lazy" decoding="async">' : '') +
+          '<div class="body">' + formatPost(p.body) + '</div>' +
+          '<a class="back" href="#blog">← Back to all posts</a>';
+        postsFrag.appendChild(art);
+      });
+      const added = [...cardsFrag.children, ...postsFrag.children];
+      grid.insertBefore(cardsFrag, grid.firstChild);
+      articles.insertBefore(postsFrag, articles.firstChild);
+      added.forEach(el => io.observe(el));
+      // a link straight to one of these posts (e.g. "View" in the admin panel) can only be followed once it's here
+      if(/^#blog-/.test(location.hash)) routeFromHash(true);
+    })
+    .catch(() => {});
 })();
 </script>
 </body>

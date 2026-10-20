@@ -6,6 +6,7 @@ const Razorpay = require('razorpay');
 
 const { initSchema, createOrder, markOrderPaid, getOrderByRazorpayId } = require('./db');
 const { PRODUCTS } = require('./products');
+const blogRoutes = require('./blog');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -23,7 +24,8 @@ app.use(cors({
     return callback(new Error('Not allowed by CORS'));
   },
 }));
-app.use(express.json());
+// Large enough for a blog post's cover image sent from the admin panel.
+app.use(express.json({ limit: '4mb' }));
 
 function getRazorpay() {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
@@ -129,6 +131,8 @@ app.post('/api/verify-payment', async (req, res) => {
     res.status(500).json({ error: 'Could not verify payment.' });
   }
 });
+
+app.use(blogRoutes);
 
 app.get('/api/order/:razorpayOrderId', async (req, res) => {
   const order = await getOrderByRazorpayId(req.params.razorpayOrderId);

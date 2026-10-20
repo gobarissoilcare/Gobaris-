@@ -26,8 +26,9 @@ stores each order in Postgres. This is what the "Checkout" button in
    - `DATABASE_URL` — the Postgres URL from step 2
    - `RAZORPAY_KEY_ID` — from your Razorpay dashboard (start with the `rzp_test_...` one)
    - `RAZORPAY_KEY_SECRET` — from your Razorpay dashboard
-   - `ALLOWED_ORIGINS` — `https://gobarissoilcare.github.io,http://localhost:8098`
-     (add your custom domain here too once you have one)
+   - `ALLOWED_ORIGINS` — `https://gobaris.com,https://www.gobaris.com,https://gobarissoilcare.github.io,http://localhost:8098`
+   - `GOOGLE_CLIENT_ID` and `SESSION_SECRET` — for the admin panel, see
+     [Admin panel](#admin-panel) below
 5. Deploy. Render will give you a URL like `https://gobaris-server.onrender.com`.
 6. Open [`../index.html`](../index.html), find this line near the shop script:
    ```js
@@ -56,10 +57,63 @@ npm start
 
 The API runs on `http://localhost:4000` by default.
 
+## Admin panel
+
+[`gobaris.com/admin`](../admin/index.html) is where the team writes blog
+posts. Posts published there show up at the top of the website's Blog page.
+Admins sign in with their Google account, and **only the emails listed in
+[`admins.js`](admins.js) can get in**:
+
+- Harsh Chittoudiya: chittoudiyaharsh.2602@gmail.com
+- Dr. Aditi Gupta: aditi08041998@gmail.com
+- Ayush Upadhyay: ayushupadhyay161@gmail.com
+
+The check happens on this server: every change an admin makes is
+re-checked against that list. To add or remove someone, edit `admins.js`,
+commit, and redeploy.
+
+### One-time Google setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) and
+   create a project (e.g. "Gobaris").
+2. **APIs & Services → OAuth consent screen**: pick **External**, app name
+   "Gobaris Admin", and your email as the support and developer contact.
+   No extra scopes are needed. Then either **publish the app** or add the
+   three admin emails under **Test users**. Until you do one of these,
+   Google blocks the sign-in.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
+   - Application type: **Web application**
+   - **Authorized JavaScript origins**: `https://gobaris.com`,
+     `https://www.gobaris.com`, and `http://localhost:8098` (and
+     `http://localhost`) for testing on your own computer
+   - No redirect URIs are needed.
+4. Copy the **Client ID** (it ends in `.apps.googleusercontent.com`) into
+   the Render service's environment as `GOOGLE_CLIENT_ID`.
+5. Also add `SESSION_SECRET`: any long random string. Generate one with
+   `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+   It keeps admins signed in (for 12 hours) across server restarts.
+6. Make sure `ALLOWED_ORIGINS` includes `https://gobaris.com`, then redeploy.
+
+### API
+
+| | |
+|---|---|
+| `GET /api/posts` | Published posts, for the website's Blog page |
+| `GET /api/posts/:slug/cover` | A post's cover image |
+| `GET /api/admin/config` | The Google Client ID and the names of the admins |
+| `POST /api/admin/login` | Exchanges a Google sign-in for a 12-hour admin session |
+| `GET/POST /api/admin/posts`, `PUT/DELETE /api/admin/posts/:id` | Manage posts. Needs `Authorization: Bearer <session>` |
+
+New admin sections (shop prices, orders, website text) go in the same
+way: add routes protected by `requireAdmin` from `auth.js`, and a section
+in `admin/index.html`. Its sidebar already lists them as "Coming later".
+
 ## What gets stored
 
 Each order in the `orders` table has the customer's name, phone, address,
 the items and quantities ordered, the amount charged, and the payment
-status (`created` → `paid`). There's no admin UI yet — for now, query the
+status (`created` → `paid`). Blog posts from the admin panel are stored in
+the `posts` table (with their cover image), including who wrote and last
+edited each one. There's no admin UI yet — for now, query the
 database directly (Render's dashboard has a built-in SQL shell), or ask to
 have a simple orders-list page added later.
