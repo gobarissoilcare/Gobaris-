@@ -1,7 +1,7 @@
 const express = require('express');
 
 const db = require('./db');
-const { ADMINS } = require('./admins');
+const { OWNERS } = require('./admins');
 const { googleClientId, verifyGoogleCredential, createSessionToken, requireAdmin } = require('./auth');
 
 const router = express.Router();
@@ -129,7 +129,7 @@ router.get('/api/posts/:slug/cover', async (req, res) => {
 // The admin page asks for this so the Google Client ID lives in one place
 // (the server's environment) instead of being copied into the page.
 router.get('/api/admin/config', (req, res) => {
-  res.json({ googleClientId: googleClientId(), admins: ADMINS.map(a => a.name) });
+  res.json({ googleClientId: googleClientId(), admins: OWNERS.map(a => a.name) });
 });
 
 // Body: { credential } — the ID token from "Sign in with Google".

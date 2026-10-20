@@ -40,7 +40,8 @@ only, no real payment).
 
 ## Admin panel
 
-`/admin` is a sign-in-with-Google admin panel where the Gobaris team writes
-blog posts. Only three Google accounts can use it, and that is checked on the
-server. It needs the same backend plus a Google Client ID. See
+`/admin` is a sign-in-with-Google admin panel where the Gobaris team manages
+orders, enquiries, shop prices and stock, blog posts, and the website's text,
+contact details, cow facts and founders. Only the admins listed on the server
+can use it. It needs the same backend plus a Google Client ID. See
 [`server/README.md` → Admin panel](server/README.md#admin-panel).

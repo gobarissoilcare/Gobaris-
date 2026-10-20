@@ -37,13 +37,13 @@ async function verifyGoogleCredential(credential) {
     err.status = 401;
     throw err;
   }
-  const admin = findAdmin(payload.email);
-  if (!admin || !payload.email_verified) {
+  const admin = payload.email_verified ? await findAdmin(payload.email) : null;
+  if (!admin) {
     const err = new Error(`${payload.email} does not have access to the Gobaris admin panel.`);
     err.status = 403;
     throw err;
   }
-  return { name: admin.name, email: admin.email, picture: payload.picture || '' };
+  return { name: admin.name, email: admin.email, owner: admin.owner, picture: payload.picture || '' };
 }
 
 function sign(data) {
@@ -59,7 +59,7 @@ function createSessionToken(admin) {
   return `${body}.${sign(body)}`;
 }
 
-function readSessionToken(token) {
+async function readSessionToken(token) {
   const [body, signature] = String(token || '').split('.');
   if (!body || !signature) return null;
   const expected = Buffer.from(sign(body));
@@ -72,18 +72,24 @@ function readSessionToken(token) {
     return null;
   }
   if (!data || typeof data.exp !== 'number' || data.exp < Date.now()) return null;
-  // Re-check the list on every request, so removing someone from admins.js
-  // locks them out as soon as the server is redeployed.
-  const admin = findAdmin(data.email);
+  // Re-check the list on every request, so someone removed from the Admins
+  // page (or from admins.js) is locked out straight away.
+  const admin = await findAdmin(data.email);
   if (!admin) return null;
-  return { name: admin.name, email: admin.email, picture: data.picture || '' };
+  return { name: admin.name, email: admin.email, owner: admin.owner, picture: data.picture || '' };
 }
 
 // Express middleware: only lets the request through for a signed-in admin.
-function requireAdmin(req, res, next) {
+async function requireAdmin(req, res, next) {
   const header = req.get('authorization') || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
-  const admin = readSessionToken(token);
+  let admin;
+  try {
+    admin = await readSessionToken(token);
+  } catch (err) {
+    console.error('admin check failed:', err);
+    return res.status(500).json({ error: 'Could not check your access. Please try again.' });
+  }
   if (!admin) {
     return res.status(401).json({ error: 'Please sign in again.' });
   }

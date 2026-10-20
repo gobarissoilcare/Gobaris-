@@ -104,24 +104,23 @@ button, input, textarea, select{font:inherit; color:inherit;}
 /* ---- dashboard layout ---- */
 .layout{display:grid; grid-template-columns:230px minmax(0,1fr); min-height:calc(100vh - 58px);}
 .side{border-right:1px solid var(--line); padding:24px 14px; background:rgba(251,248,240,0.6);}
-.side .mono{color:var(--brown-mid); padding:0 12px; display:block; margin:0 0 8px;}
-.side .mono + .mono, .side nav + .mono{margin-top:26px;}
 .side nav{display:grid; gap:2px;}
-.side a, .side span.soon{
+.side .grp{font-family:'Space Mono',monospace; letter-spacing:0.08em; text-transform:uppercase; font-size:0.7rem; color:var(--brown-mid); padding:0 12px; margin:22px 0 6px;}
+.side .grp:first-child{margin-top:0;}
+.side a{
   display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:9px 12px; border-radius:6px; text-decoration:none; color:var(--ink); font-weight:500;
+  padding:9px 12px; border-radius:6px; text-decoration:none; color:var(--ink); font-weight:500; white-space:nowrap;
 }
 .side a.active{background:var(--green-deep); color:var(--cream);}
 .side a:not(.active):hover{background:rgba(60,74,46,0.07);}
-.side span.soon{color:rgba(27,36,69,0.45); cursor:default;}
-.side span.soon small{font-family:'Space Mono',monospace; font-size:0.58rem; letter-spacing:0.08em; text-transform:uppercase; border:1px solid var(--line); border-radius:4px; padding:2px 5px;}
+.side .count{min-width:22px; height:22px; padding:0 6px; border-radius:11px; background:var(--saffron); color:#fff; font-size:0.75rem; display:inline-grid; place-items:center;}
 .side .back-site{margin-top:26px; color:var(--brown-mid); font-size:0.9rem;}
 main{padding:32px clamp(16px, 4vw, 48px) 80px; min-width:0;}
 @media(max-width:800px){
-  .layout{grid-template-columns:1fr;}
+  .layout{grid-template-columns:1fr; grid-template-rows:auto 1fr;}
   .side{border-right:none; border-bottom:1px solid var(--line); padding:10px 16px; overflow-x:auto;}
-  .side .mono, .side .soon, .side .back-site{display:none !important;}
-  .side nav{display:flex;}
+  .side .grp, .side .back-site{display:none !important;}
+  .side nav{display:flex; gap:4px;}
 }
 
 .head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
@@ -198,6 +197,46 @@ textarea{resize:vertical; line-height:1.6;}
 .preview .body blockquote p{font-style:italic;}
 .preview .body a{color:var(--green-deep);}
 
+
+/* ---- shop, orders, enquiries, settings ---- */
+.head-acts{display:flex; gap:12px; align-items:center; flex-wrap:wrap;}
+.check{display:inline-flex; align-items:center; gap:8px; font-size:0.9rem; cursor:pointer;}
+.check input{width:18px; height:18px; accent-color:var(--green-deep);}
+.filters{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px;}
+.chip{border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:7px 14px; cursor:pointer; font-weight:500; font-size:0.85rem;}
+.chip.on{background:var(--ink); color:var(--cream); border-color:var(--ink);}
+.packs{margin-top:24px; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;}
+.pack-card h3{font-size:1.25rem;}
+.pack-card .meta{font-size:0.78rem; color:var(--brown-mid); margin-top:12px;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.grid2 .field{margin-top:0;}
+@media(max-width:560px){ .grid2{grid-template-columns:1fr;} }
+.ord{background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px; display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:16px;}
+@media(max-width:800px){ .ord{grid-template-columns:1fr;} }
+.ord h3{font-size:1.05rem; display:flex; gap:10px; align-items:center; flex-wrap:wrap; font-family:'Work Sans',sans-serif; font-weight:600;}
+.ord .lines{margin-top:8px; font-size:0.9rem; line-height:1.6; color:var(--brown-mid); overflow-wrap:anywhere;}
+.ord .lines b{color:var(--ink);}
+.ord .contact-links{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+.ord select, .ord input{width:100%;}
+select{padding:9px 10px; border:1px solid var(--line); border-radius:6px; background:#fff;}
+.badge.paid{background:rgba(87,107,63,0.15); color:var(--green-deep);}
+.badge.unpaid{background:rgba(163,54,31,0.1); color:var(--danger);}
+.badge.new{background:rgba(201,122,43,0.15); color:#8A4E14;}
+.badge.packed{background:rgba(27,36,69,0.08); color:var(--ink);}
+.badge.shipped{background:rgba(48,98,160,0.12); color:#2B5A93;}
+.badge.delivered{background:rgba(87,107,63,0.15); color:var(--green-deep);}
+.badge.cancelled, .badge.closed{background:rgba(27,36,69,0.06); color:rgba(27,36,69,0.6);}
+.badge.replied{background:rgba(87,107,63,0.15); color:var(--green-deep);}
+.badge.owner{background:rgba(201,122,43,0.15); color:#8A4E14;}
+.forms{display:grid; gap:18px; margin-top:24px; max-width:860px;}
+.forms .card h3{font-size:1.2rem;}
+.forms .card .sub{font-size:0.85rem; color:var(--brown-mid); margin:4px 0 0;}
+.form-acts{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; align-items:center;}
+.form-acts .saved{font-size:0.8rem; color:var(--brown-mid);}
+.repeat{display:grid; gap:10px; margin-top:12px;}
+.repeat .item{border:1px solid var(--line); border-radius:8px; padding:12px; background:#fff; position:relative;}
+.repeat .item .item-acts{display:flex; gap:6px; margin-top:8px;}
+.help code, .head p code{font-family:'Space Mono',monospace; font-size:0.75rem; background:rgba(220,201,163,0.4); padding:1px 5px; border-radius:3px;}
 .toast{
   position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(20px); opacity:0;
   background:var(--ink); color:var(--cream); padding:12px 20px; border-radius:8px; font-size:0.9rem;
@@ -239,20 +278,26 @@ textarea{resize:vertical; line-height:1.6;}
 <!-- ============ DASHBOARD ============ -->
 <div class="layout" id="appView" hidden>
   <aside class="side">
-    <span class="mono">Manage</span>
-    <nav>
-      <a href="#posts" class="active">Blog posts</a>
+    <nav id="sideNav">
+      <span class="grp">Shop</span>
+      <a href="#orders" data-view="orders">Orders <b class="count" id="ordersCount" hidden></b></a>
+      <a href="#enquiries" data-view="enquiries">Enquiries <b class="count" id="enquiriesCount" hidden></b></a>
+      <a href="#shop" data-view="shop">Shop &amp; prices</a>
+      <span class="grp">Website</span>
+      <a href="#posts" data-view="posts">Blog posts</a>
+      <a href="#text" data-view="text">Website text</a>
+      <a href="#contact" data-view="contact">Contact details</a>
+      <a href="#facts" data-view="facts">Cow facts</a>
+      <a href="#founders" data-view="founders">Founders</a>
+      <span class="grp">Access</span>
+      <a href="#admins" data-view="admins">Admins</a>
     </nav>
-    <span class="mono">Coming later</span>
-    <span class="soon">Shop &amp; prices <small>Soon</small></span>
-    <span class="soon">Orders <small>Soon</small></span>
-    <span class="soon">Website text <small>Soon</small></span>
     <a class="back-site" href="../" target="_blank" rel="noopener">View website ↗</a>
   </aside>
 
   <main>
     <!-- post list -->
-    <section id="listView">
+    <section id="listView" class="view">
       <div class="head">
         <div>
           <h2>Blog posts</h2>
@@ -271,7 +316,7 @@ textarea{resize:vertical; line-height:1.6;}
     </section>
 
     <!-- editor -->
-    <section id="editView" hidden>
+    <section id="editView" class="view" hidden>
       <div class="head">
         <div>
           <a href="#posts" class="mono" style="color:var(--green-deep); text-decoration:none;">← All posts</a>
@@ -351,6 +396,119 @@ textarea{resize:vertical; line-height:1.6;}
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- shop & prices -->
+    <section id="shopView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Shop &amp; prices</h2>
+        <p>Change prices, run an offer, update stock, or hide a pack. Checkout always charges what's saved here.</p>
+      </div></div>
+      <div class="notice" id="shopError" hidden></div>
+      <div class="loading" id="shopLoading">Loading packs…</div>
+      <div class="packs" id="packList"></div>
+    </section>
+
+    <!-- orders -->
+    <section id="ordersView" class="view" hidden>
+      <div class="head">
+        <div>
+          <h2>Orders</h2>
+          <p>Paid orders from the shop. Update each one as you pack and send it.</p>
+        </div>
+        <div class="head-acts">
+          <label class="check"><input type="checkbox" id="ordersAll"> Also show unpaid</label>
+          <button class="btn btn-ghost" id="ordersCsv">Download for Excel</button>
+        </div>
+      </div>
+      <div class="filters" id="ordersFilter">
+        <button class="chip on" data-f="open">To do</button>
+        <button class="chip" data-f="shipped">Shipped</button>
+        <button class="chip" data-f="done">Delivered &amp; cancelled</button>
+        <button class="chip" data-f="all">All</button>
+      </div>
+      <div class="notice" id="ordersError" hidden></div>
+      <div class="loading" id="ordersLoading">Loading orders…</div>
+      <div class="list" id="orderList"></div>
+      <div class="empty" id="ordersEmpty" hidden><h3>No orders here</h3><p>Paid orders from the website's shop will show up here.</p></div>
+    </section>
+
+    <!-- enquiries -->
+    <section id="enquiriesView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Enquiries</h2>
+        <p>Every message sent from the "Get in touch" form on the website, even if the visitor never pressed send in WhatsApp.</p>
+      </div></div>
+      <div class="filters" id="enqFilter">
+        <button class="chip on" data-f="new">New</button>
+        <button class="chip" data-f="replied">Replied</button>
+        <button class="chip" data-f="closed">Closed</button>
+        <button class="chip" data-f="all">All</button>
+      </div>
+      <div class="notice" id="enqError" hidden></div>
+      <div class="loading" id="enqLoading">Loading enquiries…</div>
+      <div class="list" id="enqList"></div>
+      <div class="empty" id="enqEmpty" hidden><h3>Nothing here</h3><p>New enquiries from the website will show up here.</p></div>
+    </section>
+
+    <!-- website text -->
+    <section id="textView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Website text</h2>
+        <p>The words on the home page. Use <code>**bold**</code> or <code>*italic*</code> for emphasis.</p>
+      </div></div>
+      <div class="notice" id="textError" hidden></div>
+      <div class="forms" id="textForms"></div>
+    </section>
+
+    <!-- contact details -->
+    <section id="contactView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Contact details</h2>
+        <p>Shown in the "Get in touch" section at the bottom of every page. Enquiries are sent to this WhatsApp number.</p>
+      </div></div>
+      <div class="notice" id="contactError" hidden></div>
+      <div class="forms" id="contactForms"></div>
+    </section>
+
+    <!-- cow facts -->
+    <section id="factsView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Cow facts</h2>
+        <p>The little cow in the corner of the website pops up with one of these. Write <b>one fact per line</b>.</p>
+      </div></div>
+      <div class="notice" id="factsError" hidden></div>
+      <div class="forms" id="factsForms"></div>
+    </section>
+
+    <!-- founders -->
+    <section id="foundersView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Founders</h2>
+        <p>The founder cards on the About page.</p>
+      </div></div>
+      <div class="notice" id="foundersError" hidden></div>
+      <div class="forms" id="foundersForms"></div>
+    </section>
+
+    <!-- admins -->
+    <section id="adminsView" class="view" hidden>
+      <div class="head"><div>
+        <h2>Admins</h2>
+        <p>People who can sign in to this admin panel with their Google account.</p>
+      </div></div>
+      <div class="notice" id="adminsError" hidden></div>
+      <div class="loading" id="adminsLoading">Loading…</div>
+      <div class="list" id="adminList2"></div>
+      <div class="card" style="margin-top:22px; max-width:640px;">
+        <h3 style="font-size:1.15rem;">Give someone access</h3>
+        <div class="grid2" style="margin-top:12px;">
+          <div class="field"><label for="newAdminName">Name</label><input type="text" id="newAdminName" maxlength="100" placeholder="e.g. Raksha Bhardwaj"></div>
+          <div class="field"><label for="newAdminEmail">Google account email</label><input type="text" id="newAdminEmail" maxlength="200" placeholder="name@gmail.com"></div>
+        </div>
+        <p class="help">⚠️ Also add the same email in <b>Google Cloud → Google Auth Platform → Audience → Test users</b>, or Google won't let them sign in.</p>
+        <button class="btn btn-solid" id="addAdminBtn" style="margin-top:12px;">Add admin</button>
       </div>
     </section>
   </main>
@@ -537,18 +695,35 @@ function startApp(){
   $('whoEmail').textContent = me.email;
   if (me.picture){ $('whoPic').src = me.picture; $('whoPic').hidden = false; } else { $('whoPic').hidden = true; }
   route();
+  refreshCounts();
 }
 
+// Shows one section of the panel and highlights it in the sidebar.
+function showView(viewId, navKey){
+  lastHash = location.hash;
+  document.querySelectorAll('main > .view').forEach(v => { v.hidden = v.id !== viewId; });
+  document.querySelectorAll('#sideNav a').forEach(a => a.classList.toggle('active', a.dataset.view === navKey));
+  const active = document.querySelector('#sideNav a.active');
+  if (active && window.innerWidth <= 800) active.scrollIntoView({inline: 'center', block: 'nearest'});
+  window.scrollTo(0, 0);
+}
+
+const VIEWS = {
+  orders: showOrders, enquiries: showEnquiries, shop: showShop,
+  text: () => showContentView('text'), contact: () => showContentView('contact'),
+  facts: () => showContentView('facts'), founders: () => showContentView('founders'),
+  admins: showAdmins, posts: showList,
+};
 function route(){
   if (!me) return;
   const hash = location.hash.replace('#', '');
   const m = /^edit-(\d+)$/.exec(hash);
   if (hash === 'new') openEditor(null);
   else if (m) openEditor(Number(m[1]));
-  else showList();
+  else (VIEWS[hash] || showList)();
 }
 window.addEventListener('hashchange', () => {
-  if (dirty && !confirm('You have unsaved changes. Leave this post without saving?')){
+  if (dirty && !confirm('You have unsaved changes. Leave this page without saving?')){
     history.replaceState(null, '', lastHash);
     return;
   }
@@ -566,9 +741,7 @@ async function loadPosts(){
 }
 
 async function showList(){
-  lastHash = location.hash;
-  $('editView').hidden = true;
-  $('listView').hidden = false;
+  showView('listView', 'posts');
   showNotice($('listError'), '');
   $('listLoading').hidden = false;
   try {
@@ -611,9 +784,7 @@ const fields = ['fTitle', 'fExcerpt', 'fBody', 'fTag', 'fMinutes'];
 fields.forEach(id => $(id).addEventListener('input', () => { dirty = true; if (!$('previewPane').hidden) renderPreview(); }));
 
 async function openEditor(id){
-  lastHash = location.hash;
-  $('listView').hidden = true;
-  $('editView').hidden = false;
+  showView('editView', 'posts');
   showNotice($('editError'), '');
   setTab('write');
   editing = null;
@@ -781,6 +952,437 @@ $('deleteBtn').addEventListener('click', async () => {
   } catch(e){
     showNotice($('editError'), e.message);
   }
+});
+
+
+// ================= HELPERS FOR THE OTHER SECTIONS =================
+let uid = 0;
+const nextId = () => 'f' + (++uid);
+function fmtDateTime(d){
+  return d ? new Date(d).toLocaleString('en-IN', {day:'numeric', month:'short', hour:'numeric', minute:'2-digit'}) : '';
+}
+function rupees(n){ return '₹' + Number(n || 0).toLocaleString('en-IN'); }
+// a phone number as typed → digits for WhatsApp (Indian numbers get 91 in front)
+function waDigits(phone){
+  let d = String(phone || '').replace(/\D/g, '');
+  if (d.length === 10) d = '91' + d;
+  if (d.length === 11 && d[0] === '0') d = '91' + d.slice(1);
+  return d;
+}
+function contactLinks(phone, msg){
+  const d = waDigits(phone);
+  if (!d) return '';
+  return '<a class="btn btn-ghost btn-sm" href="tel:+' + d + '">Call</a>' +
+    '<a class="btn btn-ghost btn-sm" href="https://wa.me/' + d + (msg ? '?text=' + encodeURIComponent(msg) : '') + '" target="_blank" rel="noopener">WhatsApp</a>';
+}
+function savedLine(meta){
+  return meta && meta.updatedAt ? 'Last changed ' + fmtDateTime(meta.updatedAt) + ' by ' + esc(meta.updatedBy) : '';
+}
+// mark any form in these sections as having unsaved changes
+['shopView', 'textView', 'contactView', 'factsView', 'foundersView'].forEach(id =>
+  $(id).addEventListener('input', () => { dirty = true; }));
+
+async function refreshCounts(){
+  try {
+    const [o, e] = await Promise.all([api('/api/admin/orders'), api('/api/admin/enquiries')]);
+    setCount('ordersCount', o.orders.filter(x => x.paid && x.fulfillment === 'new').length);
+    setCount('enquiriesCount', e.enquiries.filter(x => x.status === 'new').length);
+  } catch(err){}
+}
+function setCount(id, n){ $(id).textContent = n; $(id).hidden = !n; }
+
+// ================= SHOP & PRICES =================
+async function showShop(){
+  showView('shopView', 'shop');
+  showNotice($('shopError'), '');
+  $('shopLoading').hidden = false;
+  $('packList').innerHTML = '';
+  let data;
+  try { data = await api('/api/admin/products'); }
+  catch(e){ showNotice($('shopError'), e.message); return; }
+  finally { $('shopLoading').hidden = true; }
+  $('packList').innerHTML = data.products.map(p => {
+    const i = nextId();
+    return '<div class="card pack-card" data-id="' + esc(p.id) + '">' +
+      '<h3>' + p.kg + ' kg pack</h3>' +
+      '<div class="grid2" style="margin-top:14px;">' +
+        '<div class="field"><label for="' + i + 'p">Price (₹)</label><input type="number" min="1" step="1" id="' + i + 'p" data-k="price" value="' + p.price + '"></div>' +
+        '<div class="field"><label for="' + i + 'o">Offer price (₹) <span class="hint">— optional</span></label><input type="number" min="1" step="1" id="' + i + 'o" data-k="offerPrice" value="' + (p.offerPrice == null ? '' : p.offerPrice) + '" placeholder="no offer"></div>' +
+        '<div class="field"><label for="' + i + 's">In stock (bags)</label><input type="number" min="0" step="1" id="' + i + 's" data-k="stock" value="' + p.stock + '"></div>' +
+        '<div class="field" style="align-self:end;"><label class="check"><input type="checkbox" data-k="visible"' + (p.visible ? ' checked' : '') + '> Show on website</label></div>' +
+      '</div>' +
+      '<div class="field"><label for="' + i + 'd">Description</label><textarea id="' + i + 'd" rows="3" maxlength="600" data-k="description">' + esc(p.description) + '</textarea></div>' +
+      '<div class="form-acts"><button class="btn btn-solid btn-sm" data-act="save">Save</button><span class="saved">' + savedLine({updatedAt: p.updatedBy ? p.updatedAt : null, updatedBy: p.updatedBy}) + '</span></div>' +
+      '<p class="meta">Stock goes down by itself when someone pays for an order. At 0 the pack shows "Out of Stock".</p>' +
+    '</div>';
+  }).join('');
+}
+$('packList').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act="save"]');
+  if (!btn) return;
+  const card = btn.closest('.pack-card');
+  const v = k => card.querySelector('[data-k="' + k + '"]');
+  const body = {
+    price: Number(v('price').value),
+    offerPrice: v('offerPrice').value === '' ? null : Number(v('offerPrice').value),
+    stock: Number(v('stock').value),
+    description: v('description').value,
+    visible: v('visible').checked,
+  };
+  btn.disabled = true;
+  showNotice($('shopError'), '');
+  try {
+    const data = await api('/api/admin/products/' + encodeURIComponent(card.dataset.id), {method: 'PUT', body});
+    card.querySelector('.saved').innerHTML = savedLine({updatedAt: data.product.updatedAt, updatedBy: data.product.updatedBy});
+    dirty = false;
+    toast('Saved — the website shows the new details now.');
+  } catch(err){
+    showNotice($('shopError'), err.message);
+  } finally { btn.disabled = false; }
+});
+
+// ================= ORDERS =================
+let orders = [];
+let ordersFilter = 'open';
+const FULFILLMENT_LABELS = {new: 'New', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled'};
+async function showOrders(){
+  showView('ordersView', 'orders');
+  showNotice($('ordersError'), '');
+  $('ordersLoading').hidden = false;
+  $('orderList').innerHTML = '';
+  $('ordersEmpty').hidden = true;
+  try {
+    orders = (await api('/api/admin/orders' + ($('ordersAll').checked ? '?all=1' : ''))).orders;
+  } catch(e){ showNotice($('ordersError'), e.message); return; }
+  finally { $('ordersLoading').hidden = true; }
+  renderOrders();
+}
+function renderOrders(){
+  const pick = {
+    open: o => o.fulfillment === 'new' || o.fulfillment === 'packed',
+    shipped: o => o.fulfillment === 'shipped',
+    done: o => o.fulfillment === 'delivered' || o.fulfillment === 'cancelled',
+    all: () => true,
+  }[ordersFilter];
+  const list = orders.filter(pick);
+  $('ordersEmpty').hidden = list.length > 0;
+  $('orderList').innerHTML = list.map(o => {
+    const i = nextId();
+    return '<div class="ord" data-id="' + o.id + '">' +
+      '<div>' +
+        '<h3>#' + o.id + ' · ' + esc(o.customerName) +
+          ' <span class="badge ' + (o.paid ? 'paid">Paid' : 'unpaid">Not paid') + '</span>' +
+          ' <span class="badge ' + esc(o.fulfillment) + '">' + esc(FULFILLMENT_LABELS[o.fulfillment] || o.fulfillment) + '</span></h3>' +
+        '<div class="lines">' +
+          '<b>' + o.items.map(it => it.qty + ' × ' + it.kg + ' kg').join(', ') + '</b> · ' + rupees(o.amount) + '<br>' +
+          esc(o.customerPhone) + '<br>' + esc(o.customerAddress) + '<br>' +
+          '<span style="font-size:0.8rem;">' + fmtDateTime(o.createdAt) + (o.razorpayPaymentId ? ' · Payment ' + esc(o.razorpayPaymentId) : '') + '</span>' +
+        '</div>' +
+        '<div class="contact-links">' + contactLinks(o.customerPhone, 'Hi ' + o.customerName.split(' ')[0] + ', this is Gobaris about your order #' + o.id + '.') + '</div>' +
+      '</div>' +
+      '<div style="display:grid; gap:8px; align-content:start;">' +
+        '<label for="' + i + 's" style="font-weight:600; font-size:0.85rem;">Status</label>' +
+        '<select id="' + i + 's" data-k="fulfillment">' + Object.keys(FULFILLMENT_LABELS).map(k => '<option value="' + k + '"' + (k === o.fulfillment ? ' selected' : '') + '>' + FULFILLMENT_LABELS[k] + '</option>').join('') + '</select>' +
+        '<input type="text" data-k="adminNote" maxlength="1000" placeholder="Note (e.g. courier & tracking no.)" value="' + esc(o.adminNote) + '">' +
+        '<button class="btn btn-solid btn-sm" data-act="save">Save</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+$('ordersFilter').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  ordersFilter = b.dataset.f;
+  document.querySelectorAll('#ordersFilter .chip').forEach(c => c.classList.toggle('on', c === b));
+  renderOrders();
+});
+$('ordersAll').addEventListener('change', showOrders);
+$('orderList').addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act="save"]');
+  if (!btn) return;
+  const row = btn.closest('.ord');
+  btn.disabled = true;
+  try {
+    const data = await api('/api/admin/orders/' + row.dataset.id, {method: 'PUT', body: {
+      fulfillment: row.querySelector('[data-k="fulfillment"]').value,
+      adminNote: row.querySelector('[data-k="adminNote"]').value,
+    }});
+    orders = orders.map(o => o.id === data.order.id ? data.order : o);
+    renderOrders();
+    refreshCounts();
+    toast('Order #' + data.order.id + ' updated.');
+  } catch(err){ showNotice($('ordersError'), err.message); btn.disabled = false; }
+});
+$('ordersCsv').addEventListener('click', async () => {
+  try {
+    const res = await fetch(API_BASE + '/api/admin/orders.csv' + ($('ordersAll').checked ? '?all=1' : ''), {headers: {'Authorization': 'Bearer ' + token}});
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Could not download.');
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement('a');
+    a.href = url; a.download = 'gobaris-orders-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  } catch(err){ showNotice($('ordersError'), err.message); }
+});
+
+// ================= ENQUIRIES =================
+let enquiries = [];
+let enqFilter = 'new';
+const ENQ_LABELS = {new: 'New', replied: 'Replied', closed: 'Closed'};
+async function showEnquiries(){
+  showView('enquiriesView', 'enquiries');
+  showNotice($('enqError'), '');
+  $('enqLoading').hidden = false;
+  $('enqList').innerHTML = '';
+  $('enqEmpty').hidden = true;
+  try { enquiries = (await api('/api/admin/enquiries')).enquiries; }
+  catch(e){ showNotice($('enqError'), e.message); return; }
+  finally { $('enqLoading').hidden = true; }
+  renderEnquiries();
+}
+function renderEnquiries(){
+  const list = enquiries.filter(x => enqFilter === 'all' || x.status === enqFilter);
+  $('enqEmpty').hidden = list.length > 0;
+  $('enqList').innerHTML = list.map(x =>
+    '<div class="ord" data-id="' + x.id + '">' +
+      '<div>' +
+        '<h3>' + esc(x.name) + ' <span class="badge ' + esc(x.status) + '">' + esc(ENQ_LABELS[x.status] || x.status) + '</span></h3>' +
+        '<div class="lines">' +
+          esc(x.phone) + (x.pack ? '<br><b>' + esc(x.pack) + '</b>' : '') + (x.note ? '<br>' + esc(x.note) : '') + '<br>' +
+          '<span style="font-size:0.8rem;">' + fmtDateTime(x.createdAt) + (x.handledBy && x.status !== 'new' ? ' · marked by ' + esc(x.handledBy) : '') + '</span>' +
+        '</div>' +
+        '<div class="contact-links">' + contactLinks(x.phone, 'Hi ' + x.name.split(' ')[0] + ', thank you for your enquiry to Gobaris.') + '</div>' +
+      '</div>' +
+      '<div style="display:grid; gap:8px; align-content:start;">' +
+        (x.status !== 'replied' ? '<button class="btn btn-solid btn-sm" data-st="replied">Mark as replied</button>' : '') +
+        (x.status !== 'closed' ? '<button class="btn btn-ghost btn-sm" data-st="closed">Close</button>' : '') +
+        (x.status !== 'new' ? '<button class="btn btn-ghost btn-sm" data-st="new">Move back to New</button>' : '') +
+        '<button class="btn btn-danger btn-sm" data-act="delete">Delete</button>' +
+      '</div>' +
+    '</div>').join('');
+}
+$('enqFilter').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  enqFilter = b.dataset.f;
+  document.querySelectorAll('#enqFilter .chip').forEach(c => c.classList.toggle('on', c === b));
+  renderEnquiries();
+});
+$('enqList').addEventListener('click', async e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  const id = Number(btn.closest('.ord').dataset.id);
+  try {
+    if (btn.dataset.act === 'delete'){
+      if (!confirm('Delete this enquiry? This cannot be undone.')) return;
+      await api('/api/admin/enquiries/' + id, {method: 'DELETE'});
+      enquiries = enquiries.filter(x => x.id !== id);
+    } else if (btn.dataset.st){
+      const data = await api('/api/admin/enquiries/' + id, {method: 'PUT', body: {status: btn.dataset.st}});
+      enquiries = enquiries.map(x => x.id === id ? data.enquiry : x);
+    }
+    renderEnquiries();
+    refreshCounts();
+  } catch(err){ showNotice($('enqError'), err.message); }
+});
+
+// ================= WEBSITE TEXT, CONTACT, FACTS, FOUNDERS =================
+// Each card edits part of one saved section ("site", "facts" or "founders").
+const FORMS = {
+  text: [
+    {key: 'site', title: 'Announcement bar', sub: 'A strip across the top of the website, e.g. an offer or delivery news. Visitors can close it.', fields: [
+      {path: 'announcement.enabled', label: 'Show the announcement bar', type: 'checkbox'},
+      {path: 'announcement.text', label: 'Message', max: 200},
+      {path: 'announcement.link', label: 'Link', hint: '— optional, e.g. #shop or https://…', max: 300},
+    ]},
+    {key: 'site', title: 'Top of the home page', fields: [
+      {path: 'hero.title', label: 'Big headline', hint: '— put *stars* around the word shown in colour', max: 120},
+      {path: 'hero.subtitle', label: 'Line under the headline', max: 200},
+      {path: 'hero.lede', label: 'Paragraph', type: 'textarea', rows: 3},
+    ]},
+    {key: 'site', title: 'Shop section', fields: [
+      {path: 'shopIntro', label: 'Line under "Bring it home."', type: 'textarea', rows: 2},
+    ]},
+    {key: 'site', title: 'Cow welfare section', fields: [
+      {path: 'cowCare.percent', label: 'Percentage given to cow welfare', hint: '— just the number', max: 10},
+      {path: 'cowCare.caption', label: 'Line under the percentage', max: 200},
+      {path: 'cowCare.heading', label: 'Heading', max: 200},
+      {path: 'cowCare.body', label: 'Paragraph', type: 'textarea', rows: 4},
+      {path: 'cowCare.note', label: 'Closing line', type: 'textarea', rows: 2},
+    ], list: {path: 'cowCare.points', label: 'Points', addLabel: '+ Add a point', fields: [
+      {key: 'title', label: 'Title', max: 60}, {key: 'text', label: 'Text', max: 200},
+    ]}},
+  ],
+  contact: [
+    {key: 'site', title: 'Get in touch', fields: [
+      {path: 'contact.intro', label: 'Paragraph', type: 'textarea', rows: 3},
+      {path: 'contact.name', label: 'Contact person', max: 100},
+      {path: 'contact.phone', label: 'Phone number (as shown)', hint: '— e.g. +91 95205 62691', max: 40},
+      {path: 'contact.whatsapp', label: 'WhatsApp number', hint: '— digits with country code, e.g. 919520562691', max: 20},
+      {path: 'contact.email', label: 'Email', max: 200},
+    ]},
+  ],
+  facts: [
+    {key: 'facts', title: '"Did you know?" facts', sub: 'Fun facts about soil, worms and cows.', fields: [
+      {path: 'fun', label: 'One fact per line', type: 'lines', rows: 14},
+    ]},
+    {key: 'facts', title: '"Soil science" facts', sub: 'Shown about a minute after someone opens the website — about vermicompost and what it does.', fields: [
+      {path: 'product', label: 'One fact per line', type: 'lines', rows: 10},
+    ]},
+  ],
+  founders: [
+    {key: 'founders', title: 'Founder cards', fields: [], list: {path: '', label: 'Founders', addLabel: '+ Add a person', fields: [
+      {key: 'name', label: 'Name', max: 100}, {key: 'role', label: 'Role', max: 100},
+      {key: 'email', label: 'Email', hint: '— optional', max: 200}, {key: 'linkedin', label: 'LinkedIn link', hint: '— optional, https://…', max: 300},
+    ]}},
+  ],
+};
+let content = null, contentMeta = null, contentDefaults = null;
+
+const getPath = (obj, path) => path === '' ? obj : path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+function setPath(obj, path, value){
+  const ks = path.split('.');
+  let o = obj;
+  ks.slice(0, -1).forEach(k => { o = o[k] = o[k] || {}; });
+  o[ks[ks.length - 1]] = value;
+}
+
+function fieldHTML(f, value, dataAttr){
+  const i = nextId();
+  const hint = f.hint ? ' <span class="hint">' + esc(f.hint) + '</span>' : '';
+  const max = f.max ? ' maxlength="' + f.max + '"' : '';
+  if (f.type === 'checkbox'){
+    return '<div class="field"><label class="check"><input type="checkbox" ' + dataAttr + (value ? ' checked' : '') + '> ' + esc(f.label) + '</label></div>';
+  }
+  let input;
+  if (f.type === 'textarea') input = '<textarea id="' + i + '" rows="' + (f.rows || 3) + '" ' + dataAttr + '>' + esc(value) + '</textarea>';
+  else if (f.type === 'lines') input = '<textarea id="' + i + '" rows="' + (f.rows || 8) + '" data-lines="1" ' + dataAttr + '>' + esc((value || []).join('\n')) + '</textarea>';
+  else input = '<input type="text" id="' + i + '"' + max + ' ' + dataAttr + ' value="' + esc(value) + '">';
+  return '<div class="field"><label for="' + i + '">' + esc(f.label) + hint + '</label>' + input + '</div>';
+}
+function listItemHTML(list, item){
+  return '<div class="item">' + '<div class="grid2">' +
+    list.fields.map(f => fieldHTML(f, item[f.key] || '', 'data-key="' + f.key + '"')).join('') + '</div>' +
+    '<div class="item-acts"><button type="button" class="btn btn-ghost btn-sm" data-act="up">↑</button>' +
+    '<button type="button" class="btn btn-ghost btn-sm" data-act="down">↓</button>' +
+    '<button type="button" class="btn btn-danger btn-sm" data-act="remove">Remove</button></div></div>';
+}
+function cardHTML(form, idx, source){
+  const vals = source[form.key];
+  let html = '<div class="card" data-form="' + idx + '"><h3>' + esc(form.title) + '</h3>' +
+    (form.sub ? '<p class="sub">' + esc(form.sub) + '</p>' : '') + '<div style="margin-top:14px;">' +
+    form.fields.map(f => fieldHTML(f, getPath(vals, f.path), 'data-path="' + f.path + '"')).join('') + '</div>';
+  if (form.list){
+    const items = getPath(vals, form.list.path) || [];
+    html += '<div class="field"><label>' + esc(form.list.label) + '</label><div class="repeat">' +
+      items.map(it => listItemHTML(form.list, it)).join('') + '</div>' +
+      '<div><button type="button" class="btn btn-ghost btn-sm" data-act="add">' + esc(form.list.addLabel) + '</button></div></div>';
+  }
+  html += '<div class="form-acts"><button class="btn btn-solid" data-act="save">Save</button>' +
+    '<button class="btn btn-ghost btn-sm" data-act="reset">Put back the original text</button>' +
+    '<span class="saved">' + savedLine(contentMeta[form.key]) + '</span></div></div>';
+  return html;
+}
+function collect(card, form){
+  const out = {};
+  card.querySelectorAll('[data-path]').forEach(el => {
+    const v = el.type === 'checkbox' ? el.checked
+      : el.dataset.lines ? el.value.split('\n').map(x => x.trim()).filter(Boolean)
+      : el.value;
+    setPath(out, el.dataset.path, v);
+  });
+  if (form.list){
+    const items = [...card.querySelectorAll('.repeat .item')].map(it => {
+      const o = {};
+      it.querySelectorAll('[data-key]').forEach(el => { o[el.dataset.key] = el.value.trim(); });
+      return o;
+    }).filter(o => Object.values(o).some(Boolean));
+    if (form.list.path === '') return items;
+    setPath(out, form.list.path, items);
+  }
+  return out;
+}
+
+let contentView = null;
+async function showContentView(name){
+  contentView = name;
+  showView(name + 'View', name);
+  const box = $(name + 'Forms');
+  const err = $(name + 'Error');
+  showNotice(err, '');
+  box.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const data = await api('/api/admin/content');
+    content = data.content; contentMeta = data.meta; contentDefaults = data.defaults;
+  } catch(e){ box.innerHTML = ''; showNotice(err, e.message); return; }
+  box.innerHTML = FORMS[name].map((f, i) => cardHTML(f, i, content)).join('');
+}
+['textForms', 'contactForms', 'factsForms', 'foundersForms'].forEach(boxId => {
+  $(boxId).addEventListener('click', async e => {
+    const btn = e.target.closest('button[data-act]'); if (!btn) return;
+    const card = btn.closest('.card');
+    const form = FORMS[contentView][Number(card.dataset.form)];
+    const act = btn.dataset.act;
+    if (act === 'add'){
+      card.querySelector('.repeat').insertAdjacentHTML('beforeend', listItemHTML(form.list, {}));
+      dirty = true;
+    } else if (act === 'remove' || act === 'up' || act === 'down'){
+      const item = btn.closest('.item');
+      if (act === 'remove') item.remove();
+      if (act === 'up' && item.previousElementSibling) item.parentNode.insertBefore(item, item.previousElementSibling);
+      if (act === 'down' && item.nextElementSibling) item.parentNode.insertBefore(item.nextElementSibling, item);
+      dirty = true;
+    } else if (act === 'reset'){
+      if (!confirm('Fill this box with the website’s original text? Nothing changes on the website until you press Save.')) return;
+      const fresh = document.createElement('div');
+      fresh.innerHTML = cardHTML(form, Number(card.dataset.form), contentDefaults);
+      card.replaceWith(fresh.firstChild);
+      dirty = true;
+    } else if (act === 'save'){
+      btn.disabled = true;
+      showNotice($(contentView + 'Error'), '');
+      try {
+        const data = await api('/api/admin/content/' + form.key, {method: 'PUT', body: {value: collect(card, form)}});
+        content[form.key] = data.value;
+        contentMeta[form.key] = {updatedAt: new Date().toISOString(), updatedBy: me.email};
+        card.querySelector('.saved').innerHTML = savedLine(contentMeta[form.key]);
+        dirty = false;
+        toast('Saved — it’s on the website now.');
+      } catch(err){
+        showNotice($(contentView + 'Error'), err.message);
+      } finally { btn.disabled = false; }
+    }
+  });
+});
+
+// ================= ADMINS =================
+function renderAdmins(list){
+  $('adminList2').innerHTML = list.map(a =>
+    '<div class="row" style="grid-template-columns:minmax(0,1fr) auto;">' +
+      '<div><h3>' + esc(a.name) + (a.owner ? ' <span class="badge owner">Owner</span>' : '') + '</h3>' +
+      '<div class="sub"><span>' + esc(a.email) + '</span>' + (a.addedBy ? '<span>added by ' + esc(a.addedBy) + '</span>' : '') + '</div></div>' +
+      '<div class="acts">' + (a.owner ? '' : '<button class="btn btn-danger btn-sm" data-email="' + esc(a.email) + '">Remove</button>') + '</div>' +
+    '</div>').join('');
+}
+async function showAdmins(){
+  showView('adminsView', 'admins');
+  showNotice($('adminsError'), '');
+  $('adminsLoading').hidden = false;
+  try { renderAdmins((await api('/api/admin/admins')).admins); }
+  catch(e){ showNotice($('adminsError'), e.message); }
+  finally { $('adminsLoading').hidden = true; }
+}
+$('addAdminBtn').addEventListener('click', async () => {
+  showNotice($('adminsError'), '');
+  try {
+    const data = await api('/api/admin/admins', {method: 'POST', body: {name: $('newAdminName').value, email: $('newAdminEmail').value}});
+    renderAdmins(data.admins);
+    $('newAdminName').value = ''; $('newAdminEmail').value = '';
+    toast('Added. Remember to add them as a test user in Google Cloud too.');
+  } catch(e){ showNotice($('adminsError'), e.message); }
+});
+$('adminList2').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-email]'); if (!btn) return;
+  if (!confirm('Remove ' + btn.dataset.email + '? They won’t be able to sign in any more.')) return;
+  try { renderAdmins((await api('/api/admin/admins/' + encodeURIComponent(btn.dataset.email), {method: 'DELETE'})).admins); }
+  catch(err){ showNotice($('adminsError'), err.message); }
 });
 
 // ================= START =================

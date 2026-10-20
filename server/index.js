@@ -4,12 +4,19 @@ const cors = require('cors');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 
-const { initSchema, createOrder, markOrderPaid, getOrderByRazorpayId } = require('./db');
+const db = require('./db');
+const { initSchema, createOrder, markOrderPaid, getOrderByRazorpayId } = db;
 const { PRODUCTS } = require('./products');
+const { SEED_POSTS } = require('./seed-posts');
 const blogRoutes = require('./blog');
+const shop = require('./shop');
+const contentRoutes = require('./content');
+const enquiryRoutes = require('./enquiries');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+// Render sits in front of the server; this makes req.ip the visitor's address.
+app.set('trust proxy', 1);
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
   .split(',')
@@ -41,10 +48,12 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, paymentsConfigured: Boolean(getRazorpay()) });
 });
 
-// Body: { items: [{ id, qty }], customerName, customerPhone, customerAddress }
+// Body: { items: [{ id, qty }], customerName, customerPhone, customerAddress, expectedAmount }
+// expectedAmount (in paise) is what the shopper saw; if prices changed in the
+// admin panel since they opened the page, they're asked to refresh first.
 app.post('/api/create-order', async (req, res) => {
   try {
-    const { items, customerName, customerPhone, customerAddress } = req.body || {};
+    const { items, customerName, customerPhone, customerAddress, expectedAmount } = req.body || {};
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'Cart is empty.' });
@@ -58,19 +67,28 @@ app.post('/api/create-order', async (req, res) => {
       return res.status(503).json({ error: 'Payments are not configured yet.' });
     }
 
+    // Prices and stock come from the database (set in the admin panel), never
+    // from the browser, so a tampered request can't change what's charged.
+    const products = Object.fromEntries((await db.listProducts({ visibleOnly: true })).map(p => [p.id, p]));
     let amountPaise = 0;
     const resolvedItems = [];
     for (const line of items) {
-      const product = PRODUCTS[line.id];
+      const product = products[line.id];
       const qty = Number(line.qty);
       if (!product || !Number.isInteger(qty) || qty <= 0) {
         return res.status(400).json({ error: `Invalid item: ${line.id}` });
       }
       if (qty > product.stock) {
-        return res.status(400).json({ error: `Only ${product.stock} left of ${line.id}.` });
+        return res.status(400).json({ error: product.stock === 0
+          ? `Sorry, the ${product.kg} kg pack just sold out.`
+          : `Only ${product.stock} left of the ${product.kg} kg pack.` });
       }
-      amountPaise += product.price * 100 * qty;
-      resolvedItems.push({ id: line.id, kg: product.kg, qty, price: product.price });
+      const price = shop.salePrice(product);
+      amountPaise += price * 100 * qty;
+      resolvedItems.push({ id: line.id, kg: product.kg, qty, price });
+    }
+    if (expectedAmount != null && Number(expectedAmount) !== amountPaise) {
+      return res.status(409).json({ error: 'Our prices have just been updated. Please refresh the page and check your cart again.' });
     }
 
     const razorpayOrder = await razorpay.orders.create({
@@ -133,6 +151,9 @@ app.post('/api/verify-payment', async (req, res) => {
 });
 
 app.use(blogRoutes);
+app.use(shop.router);
+app.use(contentRoutes);
+app.use(enquiryRoutes);
 
 app.get('/api/order/:razorpayOrderId', async (req, res) => {
   const order = await getOrderByRazorpayId(req.params.razorpayOrderId);
@@ -141,6 +162,7 @@ app.get('/api/order/:razorpayOrderId', async (req, res) => {
 });
 
 initSchema()
+  .then(() => db.seed({ products: PRODUCTS, posts: SEED_POSTS }))
   .then(() => {
     app.listen(PORT, () => console.log(`Gobaris server listening on port ${PORT}`));
   })

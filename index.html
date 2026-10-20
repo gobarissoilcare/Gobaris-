@@ -551,6 +551,22 @@ footer p{color:var(--sand); line-height:1.7; margin-top:14px; max-width:46ch;}
   letter-spacing:0.05em; text-transform:uppercase; color:var(--green-deep); text-decoration:none;
 }
 .post .back:hover{color:var(--saffron);}
+/* offer prices set in the admin panel */
+.price s.was{ font-size:0.75em; opacity:0.55; font-weight:400; margin-right:4px; }
+/* announcement bar, switched on from the admin panel */
+.announce-bar{
+  position:fixed; top:0; left:0; right:0; z-index:501;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  min-height:38px; padding:8px 44px; text-align:center;
+  background:var(--green-deep); color:#F4EEDF;
+  font-family:'Work Sans',sans-serif; font-size:0.9rem; line-height:1.35;
+}
+.announce-bar a{ color:#F0C27B; font-weight:600; white-space:nowrap; }
+.announce-bar .ab-close{
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  background:none; border:none; color:inherit; font-size:1.3rem; line-height:1; cursor:pointer; opacity:0.75; padding:4px 8px;
+}
+@media(max-width:640px){ .announce-bar{ font-size:0.8rem; padding:7px 38px; } }
 /* posts written in the admin panel (gobaris.com/admin) */
 .post-card .cover{margin:-28px -26px 22px; width:calc(100% + 52px); max-width:none; aspect-ratio:16/9; object-fit:cover; border-radius:8px 8px 0 0;}
 .post .cover{width:100%; margin-top:28px; border-radius:8px;}
@@ -1534,6 +1550,7 @@ footer{ padding:clamp(60px, 8vw, 90px) 0 32px; }
       <input type="tel" name="phone" placeholder="Phone or WhatsApp" autocomplete="tel" required>
       <input type="text" name="pack" placeholder="Pack size & quantity (e.g. 2 × 10 kg)">
       <textarea rows="3" name="note" placeholder="Anything else?"></textarea>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
       <button type="submit">Send enquiry on WhatsApp</button>
       <p class="form-note">Opens WhatsApp with your details filled in &mdash; just press send.</p>
     </form>
@@ -1720,6 +1737,12 @@ function stockInfo(stock){
   return { cls:'in', label:'In Stock' };
 }
 function formatINR(n){ return '₹' + n.toLocaleString('en-IN'); }
+// on offer: the regular price struck through next to the offer price
+function priceHTML(p){
+  return p.onOffer && p.regularPrice > p.price
+    ? `<s class="was">${formatINR(p.regularPrice)}</s> ${formatINR(p.price)}`
+    : formatINR(p.price);
+}
 
 function renderShopGrid(){
   const grid = document.getElementById('shopGrid');
@@ -1734,7 +1757,7 @@ function renderShopGrid(){
     card.innerHTML = `
       <div class="pack-photo"><img src="${PACK_IMG[p.kg]}" alt="Gobaris Vermicompost ${p.kg} kg bag" loading="lazy" decoding="async"></div>
       <h3>Gobaris Vermicompost — ${p.kg}kg</h3>
-      <div class="price">${formatINR(p.price)}</div>
+      <div class="price">${priceHTML(p)}</div>
       <div class="stock-badge ${si.cls}">${si.label}</div>
       ${inCart>0 ? `<div class="in-cart-tag">${inCart} in cart</div>` : ''}
       <button class="btn btn-solid add-btn" data-action="details" data-id="${p.id}" type="button">View Details</button>
@@ -1826,7 +1849,7 @@ function renderModal(){
   pmImg.src = PACK_IMG[product.kg];
   pmImg.alt = `Gobaris Vermicompost ${product.kg} kg bag`;
   pmTitle.textContent = `Gobaris Vermicompost — ${product.kg}kg`;
-  pmPrice.textContent = formatINR(product.price);
+  pmPrice.innerHTML = priceHTML(product);
   pmStock.textContent = si.label;
   pmStock.className = 'stock-badge ' + si.cls;
   pmDesc.textContent = product.description;
@@ -1901,7 +1924,8 @@ document.getElementById('cartCheckout').addEventListener('click', async ()=>{
     const res = await fetch(API_BASE + '/api/create-order', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ items: entries, customerName: name, customerPhone: phone, customerAddress: address }),
+      body: JSON.stringify({ items: entries, customerName: name, customerPhone: phone, customerAddress: address,
+        expectedAmount: entries.reduce((sum, e) => { const p = PRODUCTS.find(x => x.id === e.id); return sum + (p ? p.price * e.qty * 100 : 0); }, 0) }),
     });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error || 'Could not create order.');
@@ -2217,17 +2241,26 @@ var initialPage = routeFromHash(true) || 'home';
   } else load();
 })();
 
-// ---- Enquiry form: send the details to Harsh on WhatsApp ----
+// ---- Enquiry form: send the details on WhatsApp, and keep a copy in the admin panel ----
+// CONTACT is updated from the admin panel's Contact details (see the site content loader below).
+const CONTACT = { name: 'Harsh Chittoudiya', whatsapp: '919520562691' };
 (function(){
   const f = document.getElementById('enquiryForm');
   if(!f) return;
   f.addEventListener('submit', e => {
     e.preventDefault();
     const v = n => (f.elements[n].value || '').trim();
-    const lines = ['Hi Harsh, enquiry from the Gobaris website:', 'Name: ' + v('name'), 'Phone: ' + v('phone')];
+    // saved even if the visitor never presses send in WhatsApp
+    try {
+      fetch(API_BASE + '/api/enquiries', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, keepalive: true,
+        body: JSON.stringify({ name: v('name'), phone: v('phone'), pack: v('pack'), note: v('note'), website: v('website') }),
+      }).catch(() => {});
+    } catch(err){}
+    const lines = ['Hi ' + CONTACT.name.split(' ')[0] + ', enquiry from the Gobaris website:', 'Name: ' + v('name'), 'Phone: ' + v('phone')];
     if(v('pack')) lines.push('Pack & quantity: ' + v('pack'));
     if(v('note')) lines.push('Note: ' + v('note'));
-    window.open('https://wa.me/919520562691?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
+    window.open('https://wa.me/' + CONTACT.whatsapp + '?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
     f.querySelector('button').textContent = 'Opened WhatsApp — press send there';
   });
 })();
@@ -2242,7 +2275,7 @@ var initialPage = routeFromHash(true) || 'home';
 })();
 
 // ---- Blog: posts written in the admin panel (gobaris.com/admin) ----
-// They're fetched from the server and shown above the posts written into this file.
+// They're fetched from the server and replace the posts written into this file.
 // If the server can't be reached the Blog page simply shows the posts below as before.
 // formatPost() turns what an admin types into HTML; keep in sync with admin/index.html.
 function formatPost(text){
@@ -2322,11 +2355,139 @@ function formatPost(text){
         postsFrag.appendChild(art);
       });
       const added = [...cardsFrag.children, ...postsFrag.children];
+      // The original five posts now live on the server too (and may have been edited
+      // or deleted there), so the copies written into this page are only a fallback.
+      grid.querySelectorAll('.post-card:not([href^="#blog-"])').forEach(el => el.remove());
+      articles.querySelectorAll('article.post:not([id^="blog-"])').forEach(el => el.remove());
       grid.insertBefore(cardsFrag, grid.firstChild);
       articles.insertBefore(postsFrag, articles.firstChild);
       added.forEach(el => io.observe(el));
       // a link straight to one of these posts (e.g. "View" in the admin panel) can only be followed once it's here
       if(/^#blog-/.test(location.hash)) routeFromHash(true);
+    })
+    .catch(() => {});
+})();
+
+// ---- Website content from the admin panel (gobaris.com/admin) ----
+// Text, contact details, cow facts, founders, the announcement bar and the shop's
+// prices and stock come from the server. Everything written into this page stays
+// as the fallback, so the site looks the same if the server can't be reached.
+(function(){
+  if(!window.fetch) return;
+  const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  // **bold** and *italic*, nothing else
+  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\*([^*\s][^*]*?)\*/g, '<em>$1</em>');
+  const $ = sel => document.querySelector(sel);
+  const setHTML = (el, html) => { if(el && html) el.innerHTML = html; };
+
+  function applyAnnouncement(a){
+    if(!a || !a.enabled || !a.text) return;
+    let dismissed = '';
+    try { dismissed = sessionStorage.getItem('gobaris-announce') || ''; } catch(e){}
+    if(dismissed === a.text) return;
+    const bar = document.createElement('div');
+    bar.className = 'announce-bar';
+    bar.setAttribute('role', 'status');
+    bar.innerHTML = '<span>' + inline(a.text) + '</span>' +
+      (a.link ? ' <a href="' + esc(a.link) + '"' + (/^https:/i.test(a.link) ? ' target="_blank" rel="noopener"' : '') + '>Learn more →</a>' : '') +
+      '<button class="ab-close" aria-label="Close announcement">&times;</button>';
+    document.body.insertBefore(bar, document.body.firstChild);
+    const header = document.querySelector('header');
+    const fit = () => { const h = bar.offsetHeight; if(header) header.style.top = h + 'px'; document.body.style.paddingTop = h + 'px'; };
+    fit();
+    window.addEventListener('resize', fit);
+    bar.querySelector('.ab-close').addEventListener('click', () => {
+      bar.remove();
+      window.removeEventListener('resize', fit);
+      if(header) header.style.top = '';
+      document.body.style.paddingTop = '';
+      try { sessionStorage.setItem('gobaris-announce', a.text); } catch(e){}
+    });
+  }
+
+  function applySite(site){
+    if(!site) return;
+    applyAnnouncement(site.announcement);
+    const h = site.hero || {};
+    setHTML($('.hero-title'), h.title && inline(h.title));
+    setHTML($('.hero .hero-sub'), h.subtitle && inline(h.subtitle));
+    setHTML($('.hero .lede'), h.lede && inline(h.lede));
+    setHTML($('#shop .section-head p'), site.shopIntro && inline(site.shopIntro));
+
+    const c = site.cowCare || {};
+    if(c.percent) setHTML($('#cow-care .cc-num'), esc(c.percent) + '<small>%</small>');
+    setHTML($('#cow-care .cc-cap'), c.caption && inline(c.caption));
+    setHTML($('#cow-care h2'), c.heading && inline(c.heading));
+    setHTML($('#cow-care .cow-care-copy > p:not(.cc-note)'), c.body && inline(c.body));
+    if(c.points && c.points.length) setHTML($('#cow-care .cc-list'), c.points.map(pt => '<li><b>' + inline(pt.title) + '</b><span>' + inline(pt.text) + '</span></li>').join(''));
+    setHTML($('#cow-care .cc-note'), c.note && inline(c.note));
+
+    const k = site.contact || {};
+    setHTML($('#contact .foot-grid > div > p'), k.intro && inline(k.intro));
+    const who = $('#contact .contact-who');
+    if(who){
+      if(k.name){ setHTML(who.querySelector('b'), esc(k.name)); CONTACT.name = k.name; }
+      if(k.phone) setHTML(who.querySelector('span'), esc(k.phone));
+      const mail = who.querySelector('.contact-mail');
+      if(k.email && mail){ mail.textContent = k.email; mail.href = 'mailto:' + k.email; }
+    }
+    const acts = document.querySelectorAll('#contact .contact-actions a');
+    acts.forEach(a => {
+      if(k.email && a.href.startsWith('mailto:')) a.href = 'mailto:' + k.email + '?subject=Gobaris%20enquiry';
+      if(k.phone && a.href.startsWith('tel:')) a.href = 'tel:' + k.phone.replace(/[^\d+]/g, '');
+      if(k.whatsapp && a.href.includes('wa.me/')) a.href = 'https://wa.me/' + k.whatsapp + '?text=' + encodeURIComponent('Hi ' + CONTACT.name.split(' ')[0] + ", I'm interested in Gobaris vermicompost.");
+    });
+    if(k.whatsapp) CONTACT.whatsapp = k.whatsapp;
+  }
+
+  function applyFacts(f){
+    if(!f) return;
+    if(f.fun && f.fun.length){ FUN_FACTS.length = 0; FUN_FACTS.push(...f.fun); }
+    if(f.product && f.product.length){ PRODUCT_FACTS.length = 0; PRODUCT_FACTS.push(...f.product); }
+  }
+
+  function applyFounders(list){
+    const box = $('.founder-cards');
+    if(!box || !list || !list.length) return;
+    const icon = (box.querySelector('.f-li svg') || {}).outerHTML || '';
+    box.innerHTML = list.map(fd =>
+      '<div class="founder-card reveal in">' +
+        '<div class="f-role">' + esc(fd.role) + '</div>' +
+        '<h3>' + esc(fd.name) + '</h3>' +
+        (fd.email ? '<a class="f-mail" href="mailto:' + esc(fd.email) + '">' + esc(fd.email) + '</a>' : '') +
+        (fd.linkedin ? '<a class="f-li" href="' + esc(fd.linkedin) + '" target="_blank" rel="noopener">' + icon + 'LinkedIn</a>' : '') +
+      '</div>').join('');
+  }
+
+  function applyProducts(list){
+    if(!list || !list.length) return;
+    // only packs that have a photo on this page
+    const next = list.filter(p => PACK_IMG[p.kg]).map(p => ({
+      id: p.id, kg: p.kg, price: p.price, regularPrice: p.regularPrice, onOffer: p.onOffer,
+      stock: p.stock, description: p.description,
+    }));
+    if(!next.length) return;
+    PRODUCTS.length = 0;
+    PRODUCTS.push(...next);
+    // keep the cart in line with what's actually available now
+    Object.keys(cart).forEach(id => {
+      const p = PRODUCTS.find(x => x.id === id);
+      if(!p || p.stock === 0) delete cart[id];
+      else if(cart[id] > p.stock) cart[id] = p.stock;
+    });
+    renderShopGrid();
+    renderCart();
+  }
+
+  fetch(API_BASE + '/api/site')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if(!data) return;
+      const run = fn => { try { fn(); } catch(e){ console.error(e); } };
+      run(() => applySite(data.site));
+      run(() => applyFacts(data.facts));
+      run(() => applyFounders(data.founders));
+      run(() => applyProducts(data.products));
     })
     .catch(() => {});
 })();

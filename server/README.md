@@ -59,18 +59,40 @@ The API runs on `http://localhost:4000` by default.
 
 ## Admin panel
 
-[`gobaris.com/admin`](../admin/index.html) is where the team writes blog
-posts. Posts published there show up at the top of the website's Blog page.
-Admins sign in with their Google account, and **only the emails listed in
-[`admins.js`](admins.js) can get in**:
+[`gobaris.com/admin`](../admin/index.html) is where the team runs the
+website without touching code:
+
+| Section | What it does |
+|---|---|
+| **Orders** | Paid shop orders: customer, address, packs, amount. Mark each New → Packed → Shipped → Delivered (or Cancelled), add a note such as a tracking number, and download the list for Excel. |
+| **Enquiries** | Every message from the "Get in touch" form, saved even if the visitor never presses send in WhatsApp. Mark as replied or closed. |
+| **Shop & prices** | Price, offer price, stock and description of each pack, or hide a pack. Checkout charges these prices, and stock goes down by itself when an order is paid. |
+| **Blog posts** | Write, edit, publish and delete posts, including the five original articles. |
+| **Website text** | Announcement bar, home page headline, shop intro, cow welfare section. |
+| **Contact details** | The contact person, phone, WhatsApp number and email in the footer. Enquiries go to this WhatsApp number. |
+| **Cow facts** | The facts the little cow pops up with. |
+| **Founders** | The founder cards on the About page. |
+| **Admins** | Who can sign in. |
+
+The website keeps the text written into `index.html` as a fallback, so it
+looks the same as before if the server can't be reached. On a brand-new
+database the server fills in the four packs (from [`products.js`](products.js))
+and the five original blog posts (from [`seed-posts.js`](seed-posts.js)) the
+first time it starts.
+
+Admins sign in with their Google account. **The three owners in
+[`admins.js`](admins.js) can always get in and can't be removed from the
+panel**:
 
 - Harsh Chittoudiya: chittoudiyaharsh.2602@gmail.com
 - Dr. Aditi Gupta: aditi08041998@gmail.com
 - Ayush Upadhyay: ayushupadhyay161@gmail.com
 
-The check happens on this server: every change an admin makes is
-re-checked against that list. To add or remove someone, edit `admins.js`,
-commit, and redeploy.
+Anyone else can be given access on the panel's **Admins** page. While the
+Google app is in "Testing" mode, also add their email under Google Cloud →
+Google Auth Platform → Audience → **Test users**. The check happens on this
+server: every change an admin makes is re-checked against the list, so
+removing someone locks them out straight away.
 
 ### One-time Google setup
 
@@ -102,18 +124,25 @@ commit, and redeploy.
 | `GET /api/posts/:slug/cover` | A post's cover image |
 | `GET /api/admin/config` | The Google Client ID and the names of the admins |
 | `POST /api/admin/login` | Exchanges a Google sign-in for a 12-hour admin session |
-| `GET/POST /api/admin/posts`, `PUT/DELETE /api/admin/posts/:id` | Manage posts. Needs `Authorization: Bearer <session>` |
+| `GET /api/site` | Website text, cow facts, founders and shop packs, for the website |
+| `POST /api/enquiries` | Saves a "Get in touch" enquiry |
+| `GET/POST /api/admin/posts`, `PUT/DELETE /api/admin/posts/:id` | Manage posts |
+| `GET /api/admin/products`, `PUT /api/admin/products/:id` | Packs, prices and stock |
+| `GET /api/admin/orders`, `PUT /api/admin/orders/:id`, `GET /api/admin/orders.csv` | Orders and their delivery status |
+| `GET /api/admin/enquiries`, `PUT/DELETE /api/admin/enquiries/:id` | Enquiries |
+| `GET /api/admin/content`, `PUT /api/admin/content/:key` | Website text (`site`), `facts`, `founders` |
+| `GET/POST /api/admin/admins`, `DELETE /api/admin/admins/:email` | Who can sign in |
 
-New admin sections (shop prices, orders, website text) go in the same
-way: add routes protected by `requireAdmin` from `auth.js`, and a section
-in `admin/index.html`. Its sidebar already lists them as "Coming later".
+Everything under `/api/admin/` needs `Authorization: Bearer <session>`.
+
+New admin sections go in the same way: add routes protected by
+`requireAdmin` from `auth.js`, and a section in `admin/index.html`.
 
 ## What gets stored
 
 Each order in the `orders` table has the customer's name, phone, address,
-the items and quantities ordered, the amount charged, and the payment
-status (`created` → `paid`). Blog posts from the admin panel are stored in
-the `posts` table (with their cover image), including who wrote and last
-edited each one. There's no admin UI yet — for now, query the
-database directly (Render's dashboard has a built-in SQL shell), or ask to
-have a simple orders-list page added later.
+the items and quantities ordered, the amount charged, the payment status
+(`created` → `paid`) and the delivery status (`new` → `packed` → `shipped`
+→ `delivered`). Orders are listed in the admin panel's **Orders** section.
+The rest of the admin panel's data lives in the `posts`, `products`,
+`settings`, `enquiries` and `admins` tables.
