@@ -227,7 +227,16 @@ select{padding:9px 10px; border:1px solid var(--line); border-radius:6px; backgr
 .badge.delivered{background:rgba(87,107,63,0.15); color:var(--green-deep);}
 .badge.cancelled, .badge.closed{background:rgba(27,36,69,0.06); color:rgba(27,36,69,0.6);}
 .badge.replied{background:rgba(87,107,63,0.15); color:var(--green-deep);}
-.badge.owner{background:rgba(201,122,43,0.15); color:#8A4E14;}
+.badge.role{background:rgba(87,107,63,0.15); color:var(--green-deep);}
+.badge.role.analyst{background:rgba(48,98,160,0.12); color:#2B5A93;}
+.badge.role.executive{background:rgba(201,122,43,0.15); color:#8A4E14;}
+.role-group{margin-top:26px;}
+.role-group:first-child{margin-top:0;}
+.role-group h3.group{font-family:'Space Mono',monospace; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--brown-mid); font-weight:700;}
+.role-group .list{margin-top:10px;}
+.role-group .empty-line{margin-top:8px; font-size:0.88rem; color:var(--brown-mid);}
+.roles-pick{display:flex; gap:18px; flex-wrap:wrap;}
+.row select.role-select{width:auto;}
 .forms{display:grid; gap:18px; margin-top:24px; max-width:860px;}
 .forms .card h3{font-size:1.2rem;}
 .forms .card .sub{font-size:0.85rem; color:var(--brown-mid); margin:4px 0 0;}
@@ -496,19 +505,27 @@ select{padding:9px 10px; border:1px solid var(--line); border-radius:6px; backgr
     <section id="adminsView" class="view" hidden>
       <div class="head"><div>
         <h2>Admins</h2>
-        <p>People who can sign in to this admin panel with their Google account.</p>
+        <p>People who can sign in to this admin panel with their Google account, grouped by role. Everyone has the same access.</p>
       </div></div>
       <div class="notice" id="adminsError" hidden></div>
       <div class="loading" id="adminsLoading">Loading…</div>
-      <div class="list" id="adminList2"></div>
+      <div id="adminList2" style="margin-top:24px;"></div>
       <div class="card" style="margin-top:22px; max-width:640px;">
         <h3 style="font-size:1.15rem;">Give someone access</h3>
         <div class="grid2" style="margin-top:12px;">
           <div class="field"><label for="newAdminName">Name</label><input type="text" id="newAdminName" maxlength="100" placeholder="e.g. Raksha Bhardwaj"></div>
           <div class="field"><label for="newAdminEmail">Google account email</label><input type="text" id="newAdminEmail" maxlength="200" placeholder="name@gmail.com"></div>
         </div>
+        <div class="field">
+          <label>Role</label>
+          <div class="roles-pick" id="newAdminRole">
+            <label class="check"><input type="radio" name="newRole" value="Analyst" checked> Analyst</label>
+            <label class="check"><input type="radio" name="newRole" value="Admin"> Admin</label>
+            <label class="check"><input type="radio" name="newRole" value="Executive"> Executive</label>
+          </div>
+        </div>
         <p class="help">⚠️ Also add the same email in <b>Google Cloud → Google Auth Platform → Audience → Test users</b>, or Google won't let them sign in.</p>
-        <button class="btn btn-solid" id="addAdminBtn" style="margin-top:12px;">Add admin</button>
+        <button class="btn btn-solid" id="addAdminBtn" style="margin-top:12px;">Add person</button>
       </div>
     </section>
   </main>
@@ -1353,30 +1370,53 @@ async function showContentView(name){
 });
 
 // ================= ADMINS =================
+let adminRoles = ['Analyst', 'Admin', 'Executive'];
+// Grouped by role, in the order Analyst → Admin → Executive.
 function renderAdmins(list){
-  $('adminList2').innerHTML = list.map(a =>
-    '<div class="row" style="grid-template-columns:minmax(0,1fr) auto;">' +
-      '<div><h3>' + esc(a.name) + (a.owner ? ' <span class="badge owner">Owner</span>' : '') + '</h3>' +
-      '<div class="sub"><span>' + esc(a.email) + '</span>' + (a.addedBy ? '<span>added by ' + esc(a.addedBy) + '</span>' : '') + '</div></div>' +
-      '<div class="acts">' + (a.owner ? '' : '<button class="btn btn-danger btn-sm" data-email="' + esc(a.email) + '">Remove</button>') + '</div>' +
-    '</div>').join('');
+  $('adminList2').innerHTML = adminRoles.map(role => {
+    const people = list.filter(a => a.role === role);
+    return '<div class="role-group"><h3 class="group">' + esc(role) + 's (' + people.length + ')</h3>' +
+      (people.length ? '<div class="list">' + people.map(a =>
+        '<div class="row" style="grid-template-columns:minmax(0,1fr) auto;">' +
+          '<div><h3>' + esc(a.name) + ' <span class="badge role ' + esc(a.role.toLowerCase()) + '">' + esc(a.role) + '</span></h3>' +
+          '<div class="sub"><span>' + esc(a.email) + '</span>' + (a.addedBy ? '<span>added by ' + esc(a.addedBy) + '</span>' : '') + '</div></div>' +
+          '<div class="acts">' + (a.permanent ? '' :
+            '<select class="role-select" data-email="' + esc(a.email) + '" aria-label="Role for ' + esc(a.name) + '">' +
+              adminRoles.map(r => '<option' + (r === a.role ? ' selected' : '') + '>' + esc(r) + '</option>').join('') + '</select>' +
+            '<button class="btn btn-danger btn-sm" data-email="' + esc(a.email) + '">Remove</button>') + '</div>' +
+        '</div>').join('') + '</div>' : '<p class="empty-line">No one yet.</p>') +
+    '</div>';
+  }).join('');
 }
 async function showAdmins(){
   showView('adminsView', 'admins');
   showNotice($('adminsError'), '');
   $('adminsLoading').hidden = false;
-  try { renderAdmins((await api('/api/admin/admins')).admins); }
+  try {
+    const data = await api('/api/admin/admins');
+    if (data.roles) adminRoles = data.roles;
+    renderAdmins(data.admins);
+  }
   catch(e){ showNotice($('adminsError'), e.message); }
   finally { $('adminsLoading').hidden = true; }
 }
 $('addAdminBtn').addEventListener('click', async () => {
   showNotice($('adminsError'), '');
   try {
-    const data = await api('/api/admin/admins', {method: 'POST', body: {name: $('newAdminName').value, email: $('newAdminEmail').value}});
+    const role = (document.querySelector('input[name="newRole"]:checked') || {}).value;
+    const data = await api('/api/admin/admins', {method: 'POST', body: {name: $('newAdminName').value, email: $('newAdminEmail').value, role}});
     renderAdmins(data.admins);
     $('newAdminName').value = ''; $('newAdminEmail').value = '';
+    document.querySelector('input[name="newRole"][value="Analyst"]').checked = true;
     toast('Added. Remember to add them as a test user in Google Cloud too.');
   } catch(e){ showNotice($('adminsError'), e.message); }
+});
+$('adminList2').addEventListener('change', async e => {
+  const sel = e.target.closest('select.role-select'); if (!sel) return;
+  try {
+    renderAdmins((await api('/api/admin/admins/' + encodeURIComponent(sel.dataset.email), {method: 'PUT', body: {role: sel.value}})).admins);
+    toast('Role changed to ' + sel.value + '.');
+  } catch(err){ showNotice($('adminsError'), err.message); }
 });
 $('adminList2').addEventListener('click', async e => {
   const btn = e.target.closest('button[data-email]'); if (!btn) return;

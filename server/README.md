@@ -72,7 +72,7 @@ website without touching code:
 | **Contact details** | The contact person, phone, WhatsApp number and email in the footer. Enquiries go to this WhatsApp number. |
 | **Cow facts** | The facts the little cow pops up with. |
 | **Founders** | The founder cards on the About page. |
-| **Admins** | Who can sign in. |
+| **Admins** | Who can sign in, grouped as Analysts, Admins and Executives. |
 
 The website keeps the text written into `index.html` as a fallback, so it
 looks the same as before if the server can't be reached. On a brand-new
@@ -80,15 +80,17 @@ database the server fills in the four packs (from [`products.js`](products.js))
 and the five original blog posts (from [`seed-posts.js`](seed-posts.js)) the
 first time it starts.
 
-Admins sign in with their Google account. **The three owners in
+Admins sign in with their Google account. **The core team in
 [`admins.js`](admins.js) can always get in and can't be removed from the
-panel**:
+panel**. Everyone has the same permissions; the role is just a label:
 
-- Harsh Chittoudiya: chittoudiyaharsh.2602@gmail.com
-- Dr. Aditi Gupta: aditi08041998@gmail.com
-- Ayush Upadhyay: ayushupadhyay161@gmail.com
+- Harsh Chittoudiya (Admin): chittoudiyaharsh.2602@gmail.com
+- Dr. Aditi Gupta (Admin): aditi08041998@gmail.com
+- Ayush Upadhyay (Analyst): ayushupadhyay161@gmail.com
 
-Anyone else can be given access on the panel's **Admins** page. While the
+Anyone else can be given access on the panel's **Admins** page as an
+**Analyst**, **Admin** or **Executive** (the page groups people in that
+order, and their role can be changed later). While the
 Google app is in "Testing" mode, also add their email under Google Cloud →
 Google Auth Platform → Audience → **Test users**. The check happens on this
 server: every change an admin makes is re-checked against the list, so
@@ -131,7 +133,7 @@ removing someone locks them out straight away.
 | `GET /api/admin/orders`, `PUT /api/admin/orders/:id`, `GET /api/admin/orders.csv` | Orders and their delivery status |
 | `GET /api/admin/enquiries`, `PUT/DELETE /api/admin/enquiries/:id` | Enquiries |
 | `GET /api/admin/content`, `PUT /api/admin/content/:key` | Website text (`site`), `facts`, `founders` |
-| `GET/POST /api/admin/admins`, `DELETE /api/admin/admins/:email` | Who can sign in |
+| `GET/POST /api/admin/admins`, `PUT/DELETE /api/admin/admins/:email` | Who can sign in, and their role |
 
 Everything under `/api/admin/` needs `Authorization: Bearer <session>`.
 

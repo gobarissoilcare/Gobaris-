@@ -89,6 +89,7 @@ async function initSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
   `);
+  await pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'Admin'`);
 }
 
 async function createOrder({ razorpayOrderId, customerName, customerPhone, customerAddress, items, amountPaise }) {
@@ -327,26 +328,31 @@ async function deleteEnquiry(id) {
   return result.rowCount > 0;
 }
 
-// ---- Admins added from the admin panel (on top of the owners in admins.js) ----
+// ---- Admins added from the admin panel (on top of the core team in admins.js) ----
 
 async function listExtraAdmins() {
-  const result = await pool.query(`SELECT email, name, added_by, created_at FROM admins ORDER BY created_at`);
+  const result = await pool.query(`SELECT email, name, role, added_by, created_at FROM admins ORDER BY created_at`);
   return result.rows;
 }
 
 async function getExtraAdmin(email) {
-  const result = await pool.query(`SELECT email, name FROM admins WHERE email = $1`, [email]);
+  const result = await pool.query(`SELECT email, name, role FROM admins WHERE email = $1`, [email]);
   return result.rows[0];
 }
 
-async function addExtraAdmin({ email, name, addedBy }) {
+async function addExtraAdmin({ email, name, role, addedBy }) {
   const result = await pool.query(
-    `INSERT INTO admins (email, name, added_by) VALUES ($1, $2, $3)
-     ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
-     RETURNING email, name, added_by, created_at`,
-    [email, name, addedBy]
+    `INSERT INTO admins (email, name, role, added_by) VALUES ($1, $2, $3, $4)
+     ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role
+     RETURNING email, name, role, added_by, created_at`,
+    [email, name, role, addedBy]
   );
   return result.rows[0];
+}
+
+async function setExtraAdminRole(email, role) {
+  const result = await pool.query(`UPDATE admins SET role = $2 WHERE email = $1`, [email, role]);
+  return result.rowCount > 0;
 }
 
 async function removeExtraAdmin(email) {
@@ -360,5 +366,5 @@ module.exports = {
   listProducts, updateProduct, listOrders, updateOrderFulfillment,
   getSetting, getSettings, setSetting,
   createEnquiry, listEnquiries, updateEnquiry, deleteEnquiry,
-  listExtraAdmins, getExtraAdmin, addExtraAdmin, removeExtraAdmin,
+  listExtraAdmins, getExtraAdmin, addExtraAdmin, setExtraAdminRole, removeExtraAdmin,
 };

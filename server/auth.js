@@ -43,7 +43,7 @@ async function verifyGoogleCredential(credential) {
     err.status = 403;
     throw err;
   }
-  return { name: admin.name, email: admin.email, owner: admin.owner, picture: payload.picture || '' };
+  return { name: admin.name, email: admin.email, role: admin.role, permanent: admin.permanent, picture: payload.picture || '' };
 }
 
 function sign(data) {
@@ -76,7 +76,7 @@ async function readSessionToken(token) {
   // page (or from admins.js) is locked out straight away.
   const admin = await findAdmin(data.email);
   if (!admin) return null;
-  return { name: admin.name, email: admin.email, owner: admin.owner, picture: data.picture || '' };
+  return { name: admin.name, email: admin.email, role: admin.role, permanent: admin.permanent, picture: data.picture || '' };
 }
 
 // Express middleware: only lets the request through for a signed-in admin.

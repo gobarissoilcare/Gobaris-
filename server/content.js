@@ -2,7 +2,7 @@ const express = require('express');
 
 const db = require('./db');
 const { DEFAULTS } = require('./defaults');
-const { listAdmins, normalizeEmail, findOwner } = require('./admins');
+const { ROLES, listAdmins, normalizeEmail, findCoreMember } = require('./admins');
 const { requireAdmin } = require('./auth');
 const { publicProduct } = require('./shop');
 
@@ -122,22 +122,24 @@ router.put('/api/admin/content/:key', requireAdmin, async (req, res) => {
 
 router.get('/api/admin/admins', requireAdmin, async (req, res) => {
   try {
-    res.json({ admins: await listAdmins() });
+    res.json({ admins: await listAdmins(), roles: ROLES });
   } catch (err) {
     console.error('list admins failed:', err);
     res.status(500).json({ error: 'Could not load the admin list.' });
   }
 });
 
-// Body: { name, email } — must be the person's Google account email.
+// Body: { name, email, role } — email must be the person's Google account.
 router.post('/api/admin/admins', requireAdmin, async (req, res) => {
   const name = String((req.body || {}).name || '').trim().slice(0, 100);
   const email = normalizeEmail((req.body || {}).email);
+  const role = (req.body || {}).role;
   if (!name) return res.status(400).json({ error: 'Please enter their name.' });
+  if (!ROLES.includes(role)) return res.status(400).json({ error: 'Please choose Analyst, Admin or Executive.' });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Please enter their Google account email.' });
-  if (findOwner(email)) return res.status(400).json({ error: 'That person already has access.' });
+  if (findCoreMember(email)) return res.status(400).json({ error: 'That person already has access.' });
   try {
-    await db.addExtraAdmin({ email, name, addedBy: req.admin.email });
+    await db.addExtraAdmin({ email, name, role, addedBy: req.admin.email });
     res.status(201).json({ admins: await listAdmins() });
   } catch (err) {
     console.error('add admin failed:', err);
@@ -145,9 +147,25 @@ router.post('/api/admin/admins', requireAdmin, async (req, res) => {
   }
 });
 
+// Body: { role }
+router.put('/api/admin/admins/:email', requireAdmin, async (req, res) => {
+  const email = normalizeEmail(req.params.email);
+  const role = (req.body || {}).role;
+  if (!ROLES.includes(role)) return res.status(400).json({ error: 'Please choose Analyst, Admin or Executive.' });
+  if (findCoreMember(email)) return res.status(400).json({ error: 'Harsh, Aditi and Ayush’s roles are set on the server.' });
+  try {
+    const changed = await db.setExtraAdminRole(email, role);
+    if (!changed) return res.status(404).json({ error: 'That admin was not found.' });
+    res.json({ admins: await listAdmins() });
+  } catch (err) {
+    console.error('change role failed:', err);
+    res.status(500).json({ error: 'Could not change the role.' });
+  }
+});
+
 router.delete('/api/admin/admins/:email', requireAdmin, async (req, res) => {
   const email = normalizeEmail(req.params.email);
-  if (findOwner(email)) return res.status(400).json({ error: 'The three owners can’t be removed here.' });
+  if (findCoreMember(email)) return res.status(400).json({ error: 'Harsh, Aditi and Ayush can’t be removed here.' });
   try {
     const removed = await db.removeExtraAdmin(email);
     if (!removed) return res.status(404).json({ error: 'That admin was not found.' });
